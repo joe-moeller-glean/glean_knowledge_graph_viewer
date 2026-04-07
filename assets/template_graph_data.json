@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "title": "Enterprise Knowledge Graph",
+    "subtitle": ""
+  },
+  "user": {
+    "id": "user-current",
+    "label": "Current User",
+    "subtitle": "Role",
+    "kind": "user",
+    "layer": "user",
+    "group": "user",
+    "desc": "Profile node for the current user.",
+    "icon": "user"
+  },
+  "llms": [
+    {
+      "id": "llm-openai",
+      "label": "OpenAI",
+      "kind": "llm",
+      "layer": "llm",
+      "group": "llm",
+      "desc": "LLM provider",
+      "icon": "cpu"
+    },
+    {
+      "id": "llm-anthropic",
+      "label": "Anthropic",
+      "kind": "llm",
+      "layer": "llm",
+      "group": "llm",
+      "desc": "LLM provider",
+      "icon": "cpu"
+    },
+    {
+      "id": "llm-gemini",
+      "label": "Gemini",
+      "kind": "llm",
+      "layer": "llm",
+      "group": "llm",
+      "desc": "LLM provider",
+      "icon": "cpu"
+    }
+  ],
+  "memories": [],
+  "people": [],
+  "projects": [],
+  "meetings": [],
+  "documents": [],
+  "orgNodes": [],
+  "enterpriseDocuments": [],
+  "partners": [],
+  "dataSources": [],
+  "actions": [],
+  "edges": []
+}
