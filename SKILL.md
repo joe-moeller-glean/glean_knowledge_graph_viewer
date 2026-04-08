@@ -1,153 +1,236 @@
 ---
-description: Generates a personalized interactive HTML artifact that visualizes a user's enterprise knowledge graph in a 2D layered layout and compares Glean's connected context engine against a flatter competitor context model.
+description: >-
+  Apply ONLY when the user explicitly asks to generate, create, build, produce, or render
+  the interactive HTML artifact (personalized enterprise knowledge graph / Glean context
+  engine visualization). Do NOT invoke for general questions or discussion about knowledge
+  graphs, Glean Context, the Enterprise context engine, connected context, or similar
+  concepts—answer those conversationally without running this skill or producing the HTML.
 name: Enterprise Knowledge Graph Context Engine Visualizer
 ---
 # Instructions
 
-Read the `html_artifact_guide` skill first.
+## When to use this skill (strict)
+
+**Use this skill** only when the user’s intent is to **generate** (or create/build/produce/output) the **interactive `.html` graph artifact** described below—i.e. they want the filled template with real Glean-backed data.
+
+**Do not use this skill** when the user is only asking **what** something is, how it works, product comparisons, architecture, definitions, or other **informational** topics—even if they mention “knowledge graph,” “Glean Context,” “enterprise context,” “context engine,” or closely related phrases. In those cases, respond normally and **do not** run data gathering for this template or emit the HTML artifact unless they also clearly ask you to generate it.
+
+If ambiguous, **ask one short clarifying question** (“Do you want me to generate the interactive HTML graph, or explain the concept?”) instead of defaulting to generation.
+
 ## Goal
 
-Create one interactive `.html` artifact with a toggle between:
+Produce one personalized `.html` file by filling `assets/context_engine_graph_template.html` with a graph payload derived from **the current user’s** Glean-accessible evidence. **Default time window: the last four weeks** for anything time-bounded (activity, recency, “recent” docs or meetings). If the user names another range, honor it (`after:` / `before:`, `updated:past_month`, meeting date bounds, etc.).
 
-1. **Glean's Context**
-2. **Competitor's Context**
+Do not fabricate named entities. Prefer empty arrays over guessed nodes.
 
-Always use the bundled template in `assets/context_engine_graph_template.html` as the source of truth. Do not redesign from scratch unless the user explicitly asks.
-## Brand and visual source of truth
+## Payload shape
 
-Use these references as the design source of truth:
+Match `assets/template_graph_data.json`: same top-level keys, nesting, and field conventions below. Omit no required key; use `[]` when there is no grounded content.
 
-- `https://drive.google.com/file/d/1a-6QRo6n_dOpYOZiTXKQgaLsKt4wf9oJ`
-- `https://www.glean.com/brand-resources`
-
-Use `glean_document_reader` for those URLs when you need to confirm branding details.
-### Required brand constraints
-
-- Use only the **Glean primary palette**
-    - Primary Blue: `#343CED`
-    - Bright Green: `#D8FD49`
-    - Oatmeal: `#F6F3EB`
-    - Black: `#000000`
-    - White: `#FFFFFF`
-- Prefer **DM Sans** as the fallback typeface when PolySans is not available.
-- Do not introduce off-brand colors.
-- Keep the experience fast and lightweight: all graph rendering must be **2D**, never 3D.
-## Data-specific constraint
-
-The bundled HTML is a reusable template. Each run of the skill must populate it with the **current user’s** data.
-## Core interaction requirements
-
-The final HTML must:
-
-- be fully **2D**
-- support **pan and zoom**
-- render quickly on click
-- update the right-hand detail panel when a node is clicked
-- wrap node text when needed
-- truncate node text longer than **50 characters**
-- use larger nodes and larger labels for readability
-- keep nodes neatly arranged within their layer
-- avoid node overlap
-- fill horizontal space with more columns where possible
-- keep nodes out from under section subheaders
-- keep tool nodes arranged around datasource nodes like a **sun with rays**
-## Gather user context
-
-Build the graph from real user-specific evidence whenever possible.
-
-Use the smallest tool set that gives enough real structure:
-
-- `employee_search` for the current user profile, title, org, collaborators
-- `memory` for explicit user memories and preferences
-- `user_activity_retrieve` for recent activity across apps
-- `glean_search` for documents, meetings, initiatives, teams, partners, trackers, and datasource evidence
-- `glean_document_reader` only for a small number of key documents when titles/snippets are insufficient
-- `tool_search` to discover datasource-related MCP tools or action-pack tools where needed
-## Normalize to the bundled data model
-
-Create a payload matching `references/data-model-example.json`.
 ### Required top-level keys
 
-- `meta`
-- `user`
-- `llms`
-- `memories`
-- `people`
-- `projects`
-- `meetings`
-- `documents`
-- `orgNodes`
-- `enterpriseDocuments`
-- `partners`
-- `dataSources`
-- `actions`
-- `edges`
-## Minimum graph richness
+`meta`, `user`, `llms`, `memories`, `people`, `teams`, `departments`, `projects`, `meetings`, `documents`, `orgNodes`, `enterpriseDocuments`, `partners`, `dataSources`, `actions`, `opportunities`, `accounts`, `edges`
 
-For the **Glean's Context** view, aim for:
+### Full document structure (JSON)
 
-- at least **100 nodes**
-- at least **2.5x as many edges as nodes**
+This is the object to populate (equivalent to `assets/template_graph_data.json`). Replace empty arrays with your nodes; keep every key present.
 
-Use real evidence first. Increase density by:
+```json
+{
+  "meta": {
+    "title": "Enterprise Knowledge Graph",
+    "subtitle": ""
+  },
+  "user": {
+    "id": "user-current",
+    "label": "Current User",
+    "subtitle": "Role",
+    "kind": "user",
+    "layer": "user",
+    "group": "user",
+    "desc": "Profile node for the current user.",
+    "icon": "user"
+  },
+  "llms": [
+    {
+      "id": "llm-openai",
+      "label": "OpenAI",
+      "kind": "llm",
+      "layer": "llm",
+      "group": "llm",
+      "desc": "LLM provider",
+      "icon": "cpu"
+    },
+    {
+      "id": "llm-anthropic",
+      "label": "Anthropic",
+      "kind": "llm",
+      "layer": "llm",
+      "group": "llm",
+      "desc": "LLM provider",
+      "icon": "cpu"
+    },
+    {
+      "id": "llm-gemini",
+      "label": "Gemini",
+      "kind": "llm",
+      "layer": "llm",
+      "group": "llm",
+      "desc": "LLM provider",
+      "icon": "cpu"
+    }
+  ],
+  "memories": [],
+  "people": [],
+  "teams": [],
+  "departments": [],
+  "projects": [],
+  "meetings": [],
+  "documents": [],
+  "orgNodes": [],
+  "enterpriseDocuments": [],
+  "partners": [],
+  "dataSources": [],
+  "actions": [],
+  "opportunities": [],
+  "accounts": [],
+  "edges": []
+}
+```
 
-- including many collaborators, teams, projects, meetings, docs, partners, and datasources
-- attaching tool/action nodes to datasources
-- adding many-to-many edges where a real relationship is supported
-- connecting documents to sources, projects, meetings, people, org nodes, and partners when supported
+### Node objects (each element of the arrays above, except `edges`)
 
-Do **not** invent fake named people, documents, or partners.
-## View requirements
-### Glean's Context
+Use stable, unique string **`id`** values across the entire graph (URLs, issue keys, CRM ids, email hashes, etc.). Typical fields:
 
-This should remain a graph, but it must be organized into clean vertical layers:
+| Field | Required | Notes |
+|--------|-----------|--------|
+| `id` | yes | Unique across all nodes. |
+| `label` | yes | Short primary title (template may truncate for display). |
+| `subtitle` | recommended | Secondary line (role, date, source app, stage). |
+| `desc` | recommended | Longer detail for the side panel. |
+| `kind` | recommended | Semantic type; template may infer layout/styling (`user`, `llm`, `memory`, `person`, `team`, `project`, `meeting`, `doc`, `department`, `partner`, `datasource`, `tool`, `opportunity`, `account`, etc.). |
+| `layer` | optional | `user`, `llm`, `personal`, `enterprise` — helps grouping when set. |
+| `group` | optional | Finer bucket (e.g. `people`, `docs`); may be filled by normalization if omitted. |
+| `icon` | recommended | For most nodes: built-in feather-style name (e.g. `user`, `calendar`, `file-text`, `cpu`). For **`dataSources`**, raster logos use **`connectorSlug`** / **`id`** / **`label`** (see below); `icon` is only the fallback if no map match. |
+| `connectorSlug` | **dataSources** | Lowercase Glean connector **slug** that appears as a key in `assets/glean_connector_icons.json` → **`bySlug`** (e.g. `jira`, `slack`, `microsoft-teams`). Prefer this when you know the slug. |
+| `iconUrl` | optional | Direct image URL for a datasource (or LLM) node; overrides map lookup when set. |
+| `llmSlug` | **llms** (optional) | Same idea as **`connectorSlug`** for LLM rows; **`bySlug`** includes `openai`, `anthropic`, `gemini`. |
+| `parent` | **only on `actions`** | String **`id`** of the `dataSources` node this tool belongs to. |
+| `x`, `y` | optional | Numbers; layout usually assigns positions—omit unless you are overriding. |
 
-1. **LLM layer** at the top
-2. **User layer** with the profile node beneath it
-3. **Personal Knowledge Graph** in the middle
-4. **Enterprise Knowledge Graph** at the bottom
+The **`user`** object uses the same shape as other nodes (no `parent`).
 
-Additional required behavior:
+### Data source icons (`assets/glean_connector_icons.json`)
 
-- Add a ring around the user node labeled **User Memories**
-- Include rectangles for **OpenAI**, **Anthropic**, and **Gemini**
-- Draw lines from the user node to those LLM nodes
-- Most moving dots should bounce through the personal and enterprise graph
-- Some dots should move between the personal and enterprise layers
-- Fewer dots should travel between the user and the LLMs
-- Moving points should **generate from the profile node**
-- When a moving point returns from visiting an LLM, a new moving point should generate going toward the graph
-### Competitor's Context
+Use **`assets/glean_connector_icons.json`** as the canonical slug → logo map (the template also inlines the same data as `window.GLEAN_CONNECTOR_ICON_DATA`). For each **`dataSources`** node, **if** you find a matching connector in that file, set fields so the template can resolve the raster icon:
 
-Render a flatter comparison:
+1. **Preferred:** set **`connectorSlug`** to a key from **`bySlug`** (hyphenated, e.g. `google-calendar`, `salesforce`).
+2. **Alternative:** set **`id`** to `ds-<slug>` where `<slug>` is a **`bySlug`** key (the template strips the `ds-` prefix and looks up **`bySlug`**).
+3. **Or:** set **`label`** to match a key in **`byConnectorNameLower`** exactly after lowercasing (e.g. `google drive`, `microsoft teams`) when Glean or metadata uses the product name that way.
+4. **`iconUrl`:** use only when you have a concrete URL and want to bypass the map.
 
-- single profile node in the center
-- datasource nodes around it
-- datasource nodes should still use app icons
-- a single rectangle labeled **LLM provider**
-- a single moving dot going in and out from the profile
-- no rich personal or enterprise web
-- no deep multi-hop context graph
-## Datasource and tool rules
+If there is **no** matching entry, omit these; the graph still works and the template uses a generic datasource glyph.
 
-- All datasource nodes should use their app icon as the node icon
-- Find related tools for each datasource
-- These may come from MCP servers, action packs, or other datasource-specific tool surfaces
-- Add those tool nodes around the datasource node
-- Connect them with sun-ray style edges
-- Never invent unsupported tools
-## Asset reuse rules
+**LLM nodes (`llms`):** the template resolves logos similarly via **`llmSlug`**, or **`id`** after `llm-`, or **`label`** against the same maps—use **`bySlug`** keys `openai`, `anthropic`, `gemini` when applicable.
 
-Always reuse `assets/context_engine_graph_template.html`.
+### `edges` array
 
-To create a personalized output:
+Each edge connects two existing node ids. Prefer this shape (the template also accepts `source` / `target` and optional `kind` / `type`):
 
-1. Copy the template
-2. Replace the `TEMPLATE_GRAPH_DATA` object with the normalized payload for the current user
-3. Keep the interaction model, right panel, layered layout, and toggle behavior
-4. Save the instantiated result as the final `.html` artifact
-## Output behavior
+```json
+{
+  "a": "user-current",
+  "b": "person-alice",
+  "type": "bridge"
+}
+```
 
-Return exactly one `.html` artifact for the current user.
+`type` is optional (defaults internally if omitted). Every `a` / `b` (or `source` / `target`) must match an `id` on **`user`**, **`llms`**, or another populated array.
 
-After the artifact, add one short sentence telling the user to use the Preview eye toggle to render it.
+## How to find the data (Glean)
+
+Use the smallest set of tools that still yields a dense, real graph. Iterate: broad search → narrow with filters → `read_document` only when snippets are insufficient (few high-value docs).
+
+### Time and filters
+
+- Default to **~four weeks**: combine `updated:past_month` or `after:YYYY-MM-DD` with keyword queries; for mail/calendar use the specialized tools’ date parameters when available.
+- Scope to the user where it helps: owner/from/to/participant-style filters if your Glean query syntax supports them.
+- Deduplicate by stable `id` (document URL, employee id, issue key, CRM id).
+
+### `meta`
+
+- Set `title` / `subtitle` from the run (e.g. user name + “Enterprise knowledge graph” and optional date range).
+
+### `user`
+
+- **`employee_search`**: current user’s profile — name, title, org path, location, manager/reporting hints. Build the single `user` node (`id` stable, e.g. `user-current`, plus real `label` / `subtitle` from title).
+
+### `llms`
+
+- If the template already lists OpenAI, Anthropic, and Gemini, you may keep that structure; otherwise supply three LLM provider nodes consistent with `template_graph_data.json`.
+
+### `memories`
+
+- **`read_memory`** (or equivalent): explicit preferences, standing context, saved facts. One node per memory with clear `label` / `desc`.
+
+### `people`
+
+- Collaborators and contacts: **`employee_search`** (peers, manager chain, frequent partners), **`meeting_lookup`** attendees, **`gmail_search`** correspondents, **search** for doc authors/commenters on docs the user touched. Stable `id` per person where Glean exposes one.
+
+### `teams`
+
+- **Search** for Slack channels, Google Chat spaces, Microsoft Teams, “team” or “group” artifacts the user belongs to or appears in; meeting series tied to a named team. Label with the team/channel name; `desc` can cite source (e.g. snippet or doc title).
+
+### `departments`
+
+- From **profile org path** and **search** for department pages, headcount/org charts, or internal “About our org” docs. Distinct from **`orgNodes`** if those are finer-grained org units; departments are broader buckets (e.g. “Engineering”, “Sales”).
+
+### `projects`
+
+- **Search** across Jira, Asana, Linear, Monday, etc.: epics, projects, initiatives the user owns, is assigned to, or is mentioned on. Use issue/project keys in `id` when available.
+
+### `meetings`
+
+- **`meeting_lookup`** (and calendar-oriented **search** if needed): recurring and one-off meetings in the window; titles, times, participants as `subtitle` / `desc`.
+
+### `documents`
+
+- **Search** with recency filters: docs the user edited, owns, or that show up in their recent work; include both **personal**-relevant files and key **shared** docs. Prefer canonical URLs for `id`.
+
+### `orgNodes`
+
+- Org-chart-like nodes: reporting lines, cost centers, business units, or “org tree” entities from **employee_search** + **search** (Workday, BambooHR, internal wiki org pages). More granular than **`departments`** when the index exposes that structure.
+
+### `enterpriseDocuments`
+
+- **Search** for company-wide policies, handbooks, OKRs, leadership updates, and other **not user-only** canonical docs that represent shared enterprise context.
+
+### `partners`
+
+- **Search** CRM and partner-facing content: customers, vendors, resellers, named partner programs. Ground names in snippets or structured fields; use CRM ids in `id` when present.
+
+### `dataSources`
+
+- Connectors and apps the org has indexed: infer from **document/meeting hit metadata** (source application), connector lists if exposed, or **search** for “integration” / connector docs. One node per logical datasource. **Match icons to `assets/glean_connector_icons.json` when possible** using **`connectorSlug`**, **`id`** (`ds-<slug>`), or **`label`** / **`byConnectorNameLower`** as described in **Data source icons** above.
+
+### `actions`
+
+- Executable **tools** tied to each unique datasource: MCP tools, action packs, or documented automations. Each node **`parent`** must equal a `dataSources` node `id`. Only include tools you can justify from tool listings or docs—do not invent names.
+
+### `opportunities` and `accounts`
+
+- **Search** (and structured CRM results if available): open/pipeline opportunities and named accounts the user or their team touches in the window. Use CRM-stable ids; `subtitle` for stage, amount, or owner when present.
+
+### `edges`
+
+- For each relationship supported by evidence, add `{ "a": "<id>", "b": "<id>", "type": "<optional>" }` (or `source`/`target` if you normalize in script—the template accepts `a`/`b` or `source`/`target`). Examples: user–person, user–document, person–meeting, document–project, document–datasource, tool–datasource (`parent` already links tools; edges can reinforce graph paths), account–opportunity, partner–account. Aim for **many edges** so the graph reflects multi-hop context (see below).
+
+## Density targets (data)
+
+For a compelling graph, aim for **at least ~100 nodes** and **roughly 2.5× as many edges as nodes**, still without inventing names. Increase coverage by widening searches (more collaborators, teams, docs, CRM objects, datasources) and by adding edges wherever the index supports a real link.
+
+## Install the graph JSON in the template
+
+The runtime graph is the object assigned to **`TEMPLATE_GRAPH_DATA`** in `assets/context_engine_graph_template.html` (inside the main `<script>`), or **`window.KNOWLEDGE_GRAPH_DATA`** if set **before** that script runs. Replace the entire fallback object so it matches **Full document structure (JSON)** above (same keys; arrays filled or `[]`). In the HTML file you may use a JavaScript object literal (unquoted keys where valid) instead of strict JSON.
+
+Save the file as the single `.html` artifact for the user.
