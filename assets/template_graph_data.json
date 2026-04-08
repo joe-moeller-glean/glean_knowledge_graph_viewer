@@ -44,13 +44,85 @@
   ],
   "memories": [],
   "people": [],
+  "teams": [],
+  "departments": [],
   "projects": [],
   "meetings": [],
   "documents": [],
   "orgNodes": [],
   "enterpriseDocuments": [],
   "partners": [],
-  "dataSources": [],
+  "dataSources": [
+    {
+      "id": "ds-example-crm",
+      "label": "Example CRM",
+      "subtitle": "Datasource",
+      "desc": "Illustrative connector with nested tools.",
+      "icon": "database",
+      "actions": [
+        {
+          "id": "action-crm-lookup",
+          "label": "Lookup record",
+          "subtitle": "Tool",
+          "desc": "Open a record by id.",
+          "icon": "cpu"
+        },
+        {
+          "id": "action-crm-update",
+          "label": "Update field",
+          "subtitle": "Tool",
+          "desc": "Patch fields on a record.",
+          "icon": "cpu"
+        },
+        {
+          "id": "action-crm-log",
+          "label": "Log call",
+          "subtitle": "Tool",
+          "desc": "Attach an activity to a timeline.",
+          "icon": "cpu"
+        },
+        {
+          "id": "action-crm-report",
+          "label": "Run report",
+          "subtitle": "Tool",
+          "desc": "Execute a saved report.",
+          "icon": "cpu"
+        }
+      ]
+    },
+    {
+      "id": "ds-example-wiki",
+      "label": "Example Wiki",
+      "subtitle": "Datasource",
+      "desc": "Second illustrative datasource.",
+      "icon": "database",
+      "tools": [
+        {
+          "id": "action-wiki-search",
+          "label": "Search pages",
+          "subtitle": "Tool",
+          "desc": "Full-text search.",
+          "icon": "cpu"
+        },
+        {
+          "id": "action-wiki-edit",
+          "label": "Edit page",
+          "subtitle": "Tool",
+          "desc": "Create or update content.",
+          "icon": "cpu"
+        },
+        {
+          "id": "action-wiki-link",
+          "label": "Link issue",
+          "subtitle": "Tool",
+          "desc": "Cross-link to tickets.",
+          "icon": "cpu"
+        }
+      ]
+    }
+  ],
   "actions": [],
+  "opportunities": [],
+  "accounts": [],
   "edges": []
 }
