@@ -513,6 +513,12 @@
     stroke-width:1;
   }
 
+  .indexPill{
+    fill:#22c55e;
+    stroke:rgba(255,255,255,.35);
+    stroke-width:0.6;
+  }
+
   .llmTraveler{
     fill:var(--blue);
     stroke:rgba(255,255,255,.45);
@@ -886,7 +892,9 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     panSvg:null,
     animStartMs: typeof performance !== 'undefined' ? performance.now() : 0,
     compLifecycleCycle: -1,
-    compLifecycleTrios: null
+    compLifecycleTrios: null,
+    indexPills: [],
+    indexPillNextSpawnMs: null
   };
 
   const layoutGeom = {
@@ -895,7 +903,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     viewBoxW:2000,
     layers:[],
     bandTexts:[],
-    sections:[]
+    sections:[],
+    enterpriseKnowledgeLayer: null
   };
 
   /** Snapshot positions per graph so user/LLM can differ between views. */
@@ -917,6 +926,11 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
   const TRAVELER_R_GLEAN = 7.6;
   const TRAVELER_R_COMP = 9.6;
+
+  /** Green indexing pills: duration and spawn cadence (Glean enterprise band only). */
+  const INDEX_PILL_DURATION_MS = 1680;
+  const INDEX_PILL_SPAWN_MS = 50;
+  const DS_NODE_R_FOR_PILLS = 34;
 
   function mulberry32(seed){
     let a = seed >>> 0;
@@ -1507,9 +1521,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const link = (a, b, ty) => edges.push({ a, b, type: ty || t });
     pers.forEach(id => { if(nodeById[id]) link(uid, id); });
     ent.forEach(id => { if(nodeById[id]) link(uid, id); });
-    data.dataSources.forEach(ds => { if(nodeById[ds.id]) link(uid, ds.id); });
     const persIds = pers.map(id => nodeById[id] && id).filter(Boolean);
-    const entIds = ent.map(id => nodeById[id] && id).filter(Boolean).concat(data.dataSources.map(ds => nodeById[ds.id] && ds.id).filter(Boolean));
+    const entIds = ent.map(id => nodeById[id] && id).filter(Boolean);
     for(let i = 0; i < persIds.length; i++){
       for(let j = i + 1; j < persIds.length; j++){
         link(persIds[i], persIds[j]);
@@ -1746,10 +1759,17 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return (edge.a === uid && llmSet.has(edge.b)) || (edge.b === uid && llmSet.has(edge.a));
   }
 
+  function edgeTouchesDatasource(edge){
+    const na = nodeById[edge.a];
+    const nb = nodeById[edge.b];
+    return (na && na.kind === 'datasource') || (nb && nb.kind === 'datasource');
+  }
+
   function expandedGleanDenseEdges(){
     const edges = [];
     const pers = personalKnowledgeNodeIds();
-    const ent = enterpriseKnowledgeNodeIds();
+    const dsIdSet = new Set((data.dataSources || []).map(ds => ds.id));
+    const ent = enterpriseKnowledgeNodeIds().filter(id => !dsIdSet.has(id));
     const llmIds = data.llms.map(l => l.id).filter(id => nodeById[id]);
     const link = (a, b, ty) => {
       if(nodeById[a] && nodeById[b]) edges.push({ a, b, type: ty || 'bridge' });
@@ -1781,7 +1801,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       a: edge.a || edge.source,
       b: edge.b || edge.target,
       type: edge.type || edge.kind || 'bridge'
-    })).filter(edge => nodeById[edge.a] && nodeById[edge.b]).filter(e => !isUserLlmEdge(e));
+    })).filter(edge => nodeById[edge.a] && nodeById[edge.b]).filter(e => !isUserLlmEdge(e)).filter(e => !edgeTouchesDatasource(e));
     const dense = expandedGleanDenseEdges();
     return dedupeUndirectedEdges(base.concat(dense).concat(toolSunRayEdgesGlean()));
   }
@@ -1844,6 +1864,47 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   function gridBlockHeight(n, cols, rowStep){
     if(n <= 0) return 0;
     return Math.ceil(n / Math.max(1, cols)) * rowStep;
+  }
+
+  /**
+   * Place datasource nodes (r=34) evenly on X within [gLeft,gRight]: uniform gaps
+   * between circle edges (and from band edges) all ≥ minGapPx; wrap to more rows when needed.
+   * Does not run resolveDatasourceClustersNoOverlap — that was shifting clusters and breaking spacing.
+   */
+  function layoutDatasourceNodesFixedGap(dss, gLeft, gRight, yFirstCenter){
+    const DS_R = 34;
+    const minGapPx = 25;
+    const GAP_V = 20;
+    const d = 2 * DS_R;
+    const span = gRight - gLeft;
+    if(!dss.length) return;
+    let maxK = 1;
+    for(let k = Math.min(dss.length, 80); k >= 1; k--){
+      const g = (span - k * d) / (k + 1);
+      if(g >= minGapPx - 1e-6){
+        maxK = k;
+        break;
+      }
+    }
+    const rows = [];
+    for(let i = 0; i < dss.length; i += maxK){
+      rows.push(dss.slice(i, i + maxK));
+    }
+    const rowPitch = d + GAP_V;
+    rows.forEach((row, ri) => {
+      const k = row.length;
+      let g = (span - k * d) / (k + 1);
+      if(k === 1 && g < minGapPx){
+        row[0].x = (gLeft + gRight) / 2;
+        row[0].y = yFirstCenter + ri * rowPitch;
+        return;
+      }
+      const x0 = gLeft + g + DS_R;
+      row.forEach((ds, j) => {
+        ds.x = x0 + j * (d + g);
+        ds.y = yFirstCenter + ri * rowPitch;
+      });
+    });
   }
 
   function layoutGlean(){
@@ -1971,9 +2032,10 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       });
       y = L2.yBottom + LAYER_GAP;
 
-      const ROW_DS = 72;
-      const h3 = 56 + SEC_GRID_TOP + ROW_RECT + ROW_STACK_GAP + ROW_RECT + 24 + ROW_DS + 36;
-      const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org, departments, enterprise docs, partners, CRM; data sources below', summaryLayerW);
+      const ROW_STACK_GAP_ENT = 10;
+      const DS_GAP_BELOW_ENT = 28;
+      const h3 = 56 + SEC_GRID_TOP + ROW_RECT + ROW_STACK_GAP_ENT + ROW_RECT + 10;
+      const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org through CRM; connectors sit below this band', summaryLayerW);
       const gLeft3 = L3.x0 + LABEL_COL_W + SUMMARY_EDGE_PAD;
       const gRight3 = L3.x1 - INNER_PAD_R - SUMMARY_EDGE_PAD;
       const nEnt1 = Math.ceil(enterpriseHubIds.length / 2);
@@ -1996,14 +2058,21 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         hn.y = yEntBot;
       });
 
+      layoutGeom.enterpriseKnowledgeLayer = {
+        x: L3.x0,
+        y: L3.yTop,
+        w: L3.w,
+        h: h3,
+        yBottom: L3.yBottom
+      };
+
       const nDs = data.dataSources.length;
-      const dsY = yEntBot + ROW_RECT / 2 + 20 + 34;
+      const dsBandLeft = L3.x0;
+      const dsBandRight = L3.x0 + L3.w;
+      const dsY = L3.yBottom + DS_GAP_BELOW_ENT + 34;
       if(nDs){
-        const dsCx = hubCentersWithGap(gLeft3, gRight3, nDs);
-        data.dataSources.forEach((ds, i) => {
-          ds.x = dsCx[i];
-          ds.y = dsY;
-        });
+        layoutDatasourceNodesFixedGap(data.dataSources, dsBandLeft, dsBandRight, dsY);
+        data.dataSources.forEach(layoutDatasourceToolsRadial);
       }
 
       const midY = (L2.yTop + L3.yBottom) / 2;
@@ -2011,7 +2080,16 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
       let bandMaxX = -Infinity;
       layoutGeom.layers.forEach(L => { bandMaxX = Math.max(bandMaxX, L.x + L.w); });
-      const viewHeight = Math.max(900, y + h3 + 72);
+      let bottomForView = L3.yBottom + 20;
+      if(nDs){
+        bottomForView = L3.yBottom + DS_GAP_BELOW_ENT + 34;
+        data.dataSources.forEach(ds => {
+          const bb = clusterBBoxForDs(ds);
+          bottomForView = Math.max(bottomForView, bb.maxY);
+        });
+        bottomForView += 48;
+      }
+      const viewHeight = Math.max(900, bottomForView + 72);
       layoutGeom.viewHeight = viewHeight;
       placeOutputDocRight(bandMaxX, viewHeight);
       const docEdge = nodeById[GLEAN_OUTPUT_DOC_ID].x + (nodeById[GLEAN_OUTPUT_DOC_ID].outputW || 320) / 2;
@@ -2058,29 +2136,29 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     });
     y = L2.yBottom + LAYER_GAP;
 
-    const enterpriseSections = [
+    const DS_GAP_BELOW_ENT = 28;
+    const enterpriseSectionsMain = [
       { list: data.orgNodes, label: 'Org nodes', rowStep: ROW_RECT, extra: 0 },
       { list: data.departments, label: 'Departments', rowStep: ROW_RECT, extra: 0 },
       { list: data.enterpriseDocuments, label: 'Enterprise docs', rowStep: ROW_RECT, extra: 0 },
       { list: data.partners, label: 'Partners', rowStep: ROW_RECT, extra: 0 },
       { list: data.opportunities, label: 'Opportunities', rowStep: ROW_RECT, extra: 0 },
-      { list: data.accounts, label: 'Accounts', rowStep: ROW_RECT, extra: 0 },
-      { list: data.dataSources, label: 'Data sources', rowStep: ROW_RECT, extra: 0, singleRow: true }
+      { list: data.accounts, label: 'Accounts', rowStep: ROW_RECT, extra: 0 }
     ];
     let innerEnt = 56;
-    enterpriseSections.forEach(sec => {
+    enterpriseSectionsMain.forEach(sec => {
       const c = sec.singleRow ? Math.max(1, sec.list.length) : colsForCount(sec.list.length);
       const rs = sec.rowStep;
       innerEnt += sec.list.length
         ? SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP
         : 36;
     });
-    const h3 = innerEnt + 40;
-    const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org through CRM; data sources in one row below');
+    const h3 = innerEnt + 22;
+    const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org through CRM; connectors below this container');
     yc = L3.yTop + 56;
     const gLeft3 = L3.x0 + LABEL_COL_W;
     const gRight3 = L3.x1 - INNER_PAD_R;
-    enterpriseSections.forEach(sec => {
+    enterpriseSectionsMain.forEach(sec => {
       layoutGeom.sections.push({ x: L3.x0 + 28, y: yc + SEC_LABEL_TOP, label: sec.label });
       if(!sec.list.length){
         yc += 36;
@@ -2092,12 +2170,37 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       yc += SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP;
     });
 
+    layoutGeom.enterpriseKnowledgeLayer = {
+      x: L3.x0,
+      y: L3.yTop,
+      w: L3.w,
+      h: h3,
+      yBottom: L3.yBottom
+    };
+
+    if(data.dataSources.length){
+      const dsTop = L3.yBottom + DS_GAP_BELOW_ENT;
+      const dsBandLeft = L3.x0;
+      const dsBandRight = L3.x0 + L3.w;
+      layoutGeom.sections.push({ x: L3.x0 + 28, y: dsTop + SEC_LABEL_TOP, label: 'Data sources' });
+      const yDsRow = dsTop + SEC_GRID_TOP + ROW_RECT / 2;
+      layoutDatasourceNodesFixedGap(data.dataSources, dsBandLeft, dsBandRight, yDsRow);
+      data.dataSources.forEach(layoutDatasourceToolsRadial);
+    }
+
     const midY = (L2.yTop + L3.yBottom) / 2;
     placeUserAndMemories(midY, L2.x0);
 
     let bandMaxX = -Infinity;
     layoutGeom.layers.forEach(L => { bandMaxX = Math.max(bandMaxX, L.x + L.w); });
-    const viewHeight = Math.max(900, y + h3 + 72);
+    let dynBottom = L3.yBottom;
+    if(data.dataSources.length){
+      data.dataSources.forEach(ds => {
+        const bb = clusterBBoxForDs(ds);
+        dynBottom = Math.max(dynBottom, bb.maxY);
+      });
+    }
+    const viewHeight = Math.max(900, dynBottom + 72);
     layoutGeom.viewHeight = viewHeight;
     placeOutputDocRight(bandMaxX, viewHeight);
     const docEdge = nodeById[GLEAN_OUTPUT_DOC_ID].x + (nodeById[GLEAN_OUTPUT_DOC_ID].outputW || 320) / 2;
@@ -2589,10 +2692,40 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     applyCamera('comp');
   }
 
+  /** Glean: draw ds-glean-platform under other connectors (SVG paint order); then left→right so neighbors aren’t covered. */
+  function sortGleanNodesForPaintOrder(nodes, posMap){
+    const ids = (data.dataSources || []).map(d => d.id);
+    const idSet = new Set(ids);
+    if(!ids.length) return nodes;
+    let first = -1;
+    let last = -1;
+    nodes.forEach((n, i) => {
+      if(!idSet.has(n.id)) return;
+      if(first < 0) first = i;
+      last = i;
+    });
+    if(first < 0) return nodes;
+    const xget = id => {
+      const p = posMap[id];
+      const n = nodeById[id];
+      const x = p && p.x != null ? p.x : n && n.x;
+      return x != null ? x : 0;
+    };
+    const dsSlice = nodes.slice(first, last + 1).sort((a, b) => {
+      const ga = a.id === 'ds-glean-platform';
+      const gb = b.id === 'ds-glean-platform';
+      if(ga && !gb) return -1;
+      if(gb && !ga) return 1;
+      return xget(a.id) - xget(b.id);
+    });
+    return nodes.slice(0, first).concat(dsSlice).concat(nodes.slice(last + 1));
+  }
+
   function renderOneGraph(which){
     const posMap = which === 'glean' ? layoutPos.glean : layoutPos.comp;
     const edges = which === 'glean' ? visibleEdgesGlean() : visibleEdgesCompetitor();
-    const nodes = which === 'glean' ? visibleNodesGlean() : visibleNodesComp();
+    let nodes = which === 'glean' ? visibleNodesGlean() : visibleNodesComp();
+    if(which === 'glean') nodes = sortGleanNodesForPaintOrder(nodes, posMap);
 
     ensureViewport(which);
     const staticG = which === 'glean' ? gleanStatic : compStatic;
@@ -2682,6 +2815,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(!opts.preserveCamera){
       state.animStartMs = performance.now();
       state.compLifecycleCycle = -1;
+      state.indexPills = [];
+      state.indexPillNextSpawnMs = null;
       fitBothCameras();
       const deferFit = (svgEl, attempts) => {
         if(attempts <= 0) return;
@@ -2707,6 +2842,55 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     });
   }
 
+  function updateAndDrawIndexPills(now, posMap){
+    const band = layoutGeom.enterpriseKnowledgeLayer;
+    if(!gleanTravelersG || !band) return;
+    const dsList = (data.dataSources || []).filter(ds => nodeById[ds.id]);
+    if(!dsList.length){
+      state.indexPills = [];
+      return;
+    }
+    if(state.indexPillNextSpawnMs == null) state.indexPillNextSpawnMs = now;
+    let spawned = 0;
+    while(state.indexPillNextSpawnMs <= now && spawned < 120){
+      const ds = dsList[Math.floor(Math.random() * dsList.length)];
+      const offsetX = (Math.random() * 2 - 1) * DS_NODE_R_FOR_PILLS;
+      state.indexPills.push({
+        dsId: ds.id,
+        spawnOffsetX: offsetX,
+        startMs: state.indexPillNextSpawnMs
+      });
+      state.indexPillNextSpawnMs += INDEX_PILL_SPAWN_MS;
+      spawned++;
+    }
+    state.indexPills = state.indexPills.filter(p => now - p.startMs <= INDEX_PILL_DURATION_MS + 100);
+    state.indexPills.forEach(pill => {
+      const p = posFromMap(pill.dsId, posMap);
+      if(!p) return;
+      const age = now - pill.startMs;
+      const t = Math.min(1, Math.max(0, age / INDEX_PILL_DURATION_MS));
+      const ease = t * t * (3 - 2 * t);
+      const ox = pill.spawnOffsetX != null ? pill.spawnOffsetX : 0;
+      const yStart = p.y - DS_NODE_R_FOR_PILLS;
+      const yEnd = band.y + band.h - 14;
+      const x = p.x + ox;
+      const y = yStart + (yEnd - yStart) * ease;
+      let op = 1;
+      if(t > 0.64) op = Math.max(0, 1 - (t - 0.64) / 0.36);
+      const gg = svgEl('g', { opacity: String(op) });
+      gg.appendChild(svgEl('rect', {
+        x: x - 3.5,
+        y: y - 7,
+        width: 7,
+        height: 14,
+        rx: 3.5,
+        ry: 3.5,
+        class: 'indexPill'
+      }));
+      gleanTravelersG.appendChild(gg);
+    });
+  }
+
   function renderTravelers(){
     if(!gleanTravelersG || !compTravelersG) return;
     const now = performance.now();
@@ -2720,6 +2904,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     gVis.circles.forEach(pos => {
       gleanTravelersG.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: TRAVELER_R_GLEAN, class: pos.cls }));
     });
+    updateAndDrawIndexPills(now, layoutPos.glean);
     clearElement(compTravelersG);
     cVis.circles.forEach(pos => {
       compTravelersG.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: TRAVELER_R_COMP, class: pos.cls }));
