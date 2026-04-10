@@ -156,36 +156,66 @@
     min-height:0;
     cursor:grab;
     user-select:none;
+    display:flex;
+    flex-direction:column;
   }
 
   .stageWrap.dragging{ cursor:grabbing; }
 
-  #stageSvg{
+  .stageRow{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:row;
+    gap:0;
+    border-top:1.5px solid var(--black);
+  }
+
+  .stagePanel{
+    flex:1 1 50%;
+    min-width:0;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  .stagePanel + .stagePanel{
+    border-left:1.5px solid var(--black);
+  }
+
+  .stagePanelLabel{
+    flex:0 0 auto;
+    padding:8px 12px;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--blue);
+    background:var(--oatmeal);
+    border-bottom:1.5px solid var(--black);
+  }
+
+  .stageSvg{
     display:block;
+    flex:1 1 auto;
+    min-height:0;
     width:100%;
-    height:100%;
     background:var(--white);
     touch-action:none;
   }
 
-  .hud{
-    position:absolute;
-    left:16px;
-    bottom:16px;
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    max-width:calc(100% - 32px);
+  .outputDocBody{
+    font-size:11px;
+    font-weight:500;
+    fill:var(--black);
+    text-anchor:start;
     pointer-events:none;
   }
 
-  .pill{
-    padding:8px 12px;
-    border:1.5px solid var(--black);
-    border-radius:999px;
-    background:var(--white);
-    font-size:12px;
-    font-weight:700;
+  .outputDocCaret{
+    fill:var(--blue);
+    font-weight:900;
   }
 
   .nodeDetailPopover{
@@ -346,13 +376,25 @@
   .node.user .shape{fill:var(--blue)}
   .node.memory .shape{fill:var(--green)}
   .node.tool .shape,
-  .node.team .shape,
-  .node.llm .shape{fill:var(--oatmeal)}
+  .node.team .shape{fill:var(--oatmeal)}
+  .node.llm .shape,
   .node.datasource .shape{fill:var(--white)}
+  .node.outputDoc .shape{
+    fill:var(--oatmeal);
+    stroke-dasharray:6 4;
+  }
 
   .node.selected .shape{
     stroke:var(--blue);
     stroke-width:3;
+  }
+
+  #gleanSvg .node.travelerVisitHighlight .shape{
+    fill:var(--green);
+  }
+
+  #gleanSvg .node.outputDoc.travelerVisitHighlight .shape{
+    fill:var(--oatmeal);
   }
 
   .nodeLabel{
@@ -440,10 +482,6 @@
         </div>
       </div>
       <div class="controls">
-        <div class="segmented">
-          <button id="btnGlean" class="active">Glean's Context</button>
-          <button id="btnCompetitor">Competitor's Context</button>
-        </div>
         <div class="segmented graphDetailSeg" id="graphDetailWrap" aria-label="Graph detail level">
           <button type="button" id="btnGraphCollapsed" class="active">Summary</button>
           <button type="button" id="btnGraphExpanded">Full graph</button>
@@ -453,11 +491,15 @@
     </div>
 
     <div class="stageWrap card" id="stageWrap">
-      <svg id="stageSvg" viewBox="0 0 2000 3300" preserveAspectRatio="xMidYMid meet" aria-label="Interactive enterprise knowledge graph"></svg>
-      <div class="hud">
-        <div class="pill" id="hudMode">Mode: Glean's Context</div>
-        <div class="pill" id="hudCounts">0 nodes · 0 edges</div>
-        <div class="pill" id="hudCamera">100% · drag to pan · wheel to zoom</div>
+      <div class="stageRow">
+        <div class="stagePanel">
+          <div class="stagePanelLabel">Glean context</div>
+          <svg id="gleanSvg" class="stageSvg" viewBox="0 0 2000 2400" preserveAspectRatio="xMidYMid meet" aria-label="Glean agent lifecycle graph"></svg>
+        </div>
+        <div class="stagePanel">
+          <div class="stagePanelLabel">Competitor context</div>
+          <svg id="compSvg" class="stageSvg" viewBox="0 0 2200 1800" preserveAspectRatio="xMidYMid meet" aria-label="Competitor agent lifecycle graph"></svg>
+        </div>
       </div>
       <div class="nodeDetailPopover card isHidden" id="nodeDetailPopover" role="dialog" aria-modal="false" aria-labelledby="detailTitle" aria-hidden="true">
         <div class="nodeDetailHead">
@@ -743,17 +785,12 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     edges:[]
   };
 
-  const svg = document.getElementById('stageSvg');
+  const gleanSvg = document.getElementById('gleanSvg');
+  const compSvg = document.getElementById('compSvg');
   const stageWrap = document.getElementById('stageWrap');
-  const btnGlean = document.getElementById('btnGlean');
-  const btnCompetitor = document.getElementById('btnCompetitor');
   const btnReset = document.getElementById('btnReset');
-  const graphDetailWrap = document.getElementById('graphDetailWrap');
   const btnGraphCollapsed = document.getElementById('btnGraphCollapsed');
   const btnGraphExpanded = document.getElementById('btnGraphExpanded');
-  const hudMode = document.getElementById('hudMode');
-  const hudCounts = document.getElementById('hudCounts');
-  const hudCamera = document.getElementById('hudCamera');
 
   const pageTitle = document.getElementById('pageTitle');
   const nodeDetailPopover = document.getElementById('nodeDetailPopover');
@@ -765,17 +802,26 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
   const data = normalizeData(TEMPLATE_GRAPH_DATA);
 
+  const GLEAN_OUTPUT_DOC_ID = 'glean-output-doc';
+  const COMP_OUTPUT_DOC_ID = 'comp-output-doc';
+  const OUTPUT_DOC_PLACEHOLDER =
+    'The agent synthesizes personal and enterprise context in a single pass, then writes the grounded answer here. Fewer LLM round-trips and federated hops than a generic tool-calling stack.';
+
   const state = {
-    view:'glean',
     graphDetail:'collapsed',
     selected:null,
-    camera:{x:0,y:0,scale:1},
+    cameraGlean:{x:0,y:0,scale:1},
+    cameraComp:{x:0,y:0,scale:1},
     isPanning:false,
-    panStart:null
+    panStart:null,
+    panSvg:null,
+    animStartMs: typeof performance !== 'undefined' ? performance.now() : 0,
+    compLifecycleCycle: -1,
+    compLifecycleTrios: null
   };
 
   const layoutGeom = {
-    viewHeight:3300,
+    viewHeight:2400,
     viewBoxX:0,
     viewBoxW:2000,
     layers:[],
@@ -783,40 +829,210 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     sections:[]
   };
 
+  /** Snapshot positions per graph so user/LLM can differ between views. */
+  const layoutPos = { glean:{}, comp:{} };
+
   const nodeById = {};
   let allNodes = [];
   let currentVisibleNodes = [];
   let currentVisibleEdges = [];
-  let viewport, staticGroup, travelerGroup;
+  let gleanViewport, gleanStatic, gleanTravelersG;
+  let compViewport, compStatic, compTravelersG;
 
-  /** Pixels per second — all traveling dots (Glean + competitor). */
-  const TRAVELER_SPEED = 420;
-  const GLEAN_TRAVELER_COUNT = 50;
-  const GLEAN_TRAVELER_STAGGER_MS = 10000;
-  /** Competitor view: one original traveler plus nine more; all start within 10s of graph load. */
-  const COMPETITOR_TRAVELER_COUNT = 10;
-  const COMPETITOR_TRAVELER_STAGGER_MS = 10000;
+  /** Wall-clock seconds to animate each traveler along one edge between nodes. */
+  const TRAVELER_SEGMENT_SEC = 1.5;
+  /** Pause after a full path (travel + typing) before the next randomized run. */
+  const CYCLE_GAP_SEC = 0.5;
+  const TYPING_CHARS_PER_SEC = 42;
+  const OUTPUT_DOC_TYPING_SEC = OUTPUT_DOC_PLACEHOLDER.length / TYPING_CHARS_PER_SEC;
 
-  /** Glean view: initial HUD zoom 100%, wheel capped at 200%. */
+  const TRAVELER_R_GLEAN = 7.6;
+  const TRAVELER_R_COMP = 9.6;
+
+  function mulberry32(seed){
+    let a = seed >>> 0;
+    return function(){
+      a += 0x6D2B79F5;
+      let t = Math.imul(a ^ a >>> 15, a | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffleWithRand(arr, rand){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(rand() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function personalKnowledgeNodeIds(){
+    return [
+      ...data.people.map(n => n.id),
+      ...data.teams.map(n => n.id),
+      ...data.projects.map(n => n.id),
+      ...data.meetings.map(n => n.id),
+      ...data.documents.map(n => n.id),
+      ...data.memories.map(n => n.id)
+    ].filter(id => nodeById[id]);
+  }
+
+  function enterpriseKnowledgeNodeIds(){
+    return [
+      ...data.orgNodes,
+      ...data.departments,
+      ...data.enterpriseDocuments,
+      ...data.partners,
+      ...data.opportunities,
+      ...data.accounts,
+      ...data.dataSources
+    ].map(n => n.id).filter(id => nodeById[id]);
+  }
+
+  function gleanKnowledgePoolForTravel(){
+    if(state.graphDetail === 'collapsed'){
+      const pers = ['hub-pers-people','hub-pers-teams','hub-pers-projects','hub-pers-meetings','hub-pers-documents'].map(id => nodeById[id] && id).filter(Boolean);
+      const ent = COLLAPSE_HUB_ENTERPRISE_NO_DS.map(id => nodeById[id] && id).filter(Boolean);
+      return pers.concat(ent);
+    }
+    return personalKnowledgeNodeIds().concat(
+      enterpriseKnowledgeNodeIds().filter(id => !data.dataSources.some(ds => ds.id === id))
+    );
+  }
+
+  function gleanPathDurationFromPlan(plan){
+    if(!plan || !plan.travelers || !plan.travelers.length){
+      return TRAVELER_SEGMENT_SEC + TRAVELER_SEGMENT_SEC + OUTPUT_DOC_TYPING_SEC;
+    }
+    const maxE = Math.max(...plan.travelers.map(tr => Math.max(0, tr.pathToLlm.length - 1)), 1);
+    return maxE * TRAVELER_SEGMENT_SEC + TRAVELER_SEGMENT_SEC + OUTPUT_DOC_TYPING_SEC;
+  }
+
+  /**
+   * Randomized multi-traveler plan for Glean: each dot starts at the user profile, takes 1–3 bounce hops
+   * among personal/enterprise nodes (no immediate revisit), converges on one chosen LLM; LLM→doc after
+   * the longest path finishes. Deterministic in cycleIdx so loop timing stays consistent.
+   */
+  function generateGleanTravelPlan(cycleIdx){
+    const rand = mulberry32((cycleIdx + 1) * 0x9E3779B1);
+    const pool = shuffleWithRand(gleanKnowledgePoolForTravel(), rand);
+    const llmIds = data.llms.map(l => l.id).filter(id => nodeById[id]);
+    const targetLlm = llmIds.length ? llmIds[Math.floor(rand() * llmIds.length)] : 'llm-openai';
+    const uid = data.user.id;
+
+    if(!pool.length){
+      return {
+        targetLlm,
+        travelers: [{ pathToLlm: [uid, targetLlm] }]
+      };
+    }
+
+    const numTravelers = 5;
+    const travelers = [];
+    for(let i = 0; i < numTravelers; i++){
+      const bounceSteps = 1 + Math.floor(rand() * 3);
+      const path = [uid];
+      let prev = uid;
+      for(let b = 0; b < bounceSteps; b++){
+        const choices = pool.filter(id => id !== prev);
+        if(!choices.length) break;
+        const next = choices[Math.floor(rand() * choices.length)];
+        path.push(next);
+        prev = next;
+      }
+      path.push(targetLlm);
+      travelers.push({ pathToLlm: path });
+    }
+    return { targetLlm, travelers };
+  }
+
+  function gleanLocalTimeInCycle(elapsed){
+    let t = 0;
+    for(let idx = 0; ; idx++){
+      const plan = generateGleanTravelPlan(idx);
+      const dur = gleanPathDurationFromPlan(plan) + CYCLE_GAP_SEC;
+      if(elapsed < t + dur){
+        return { tRaw: elapsed - t, plan, pathDur: gleanPathDurationFromPlan(plan) };
+      }
+      t += dur;
+    }
+  }
+
+  function computeGleanVisitedNodeIds(tRaw, plan, pathDur){
+    const docId = GLEAN_OUTPUT_DOC_ID;
+    const visited = new Set();
+    if(tRaw >= pathDur || !plan || !plan.travelers || !plan.travelers.length){
+      return visited;
+    }
+    const maxE = Math.max(...plan.travelers.map(tr => Math.max(1, tr.pathToLlm.length - 1)), 1);
+    const toLlmDur = maxE * TRAVELER_SEGMENT_SEC;
+
+    if(tRaw < toLlmDur){
+      const segIdx = Math.floor(tRaw / TRAVELER_SEGMENT_SEC);
+      plan.travelers.forEach(tr => {
+        const path = tr.pathToLlm;
+        const E = path.length - 1;
+        for(let i = 0; i <= Math.min(segIdx, E); i++){
+          visited.add(path[i]);
+        }
+      });
+      return visited;
+    }
+
+    plan.travelers.forEach(tr => {
+      tr.pathToLlm.forEach(id => visited.add(id));
+    });
+
+    const tDoc = tRaw - toLlmDur;
+    if(tDoc < TRAVELER_SEGMENT_SEC){
+      if(tDoc > 0) visited.add(docId);
+      return visited;
+    }
+
+    visited.add(docId);
+    return visited;
+  }
+
+  function compCycleTiming(){
+    const travelDur = (data.dataSources || []).length < 1
+      ? 2 * TRAVELER_SEGMENT_SEC
+      : 8 * TRAVELER_SEGMENT_SEC;
+    const pathDur = travelDur + OUTPUT_DOC_TYPING_SEC;
+    return { pathDur, cycleLen: pathDur + CYCLE_GAP_SEC };
+  }
+
+  function refreshLifecycleRandomPicks(now){
+    const elapsed = (now - state.animStartMs) / 1000;
+    const c = compCycleTiming();
+    const cIdx = Math.floor(elapsed / c.cycleLen);
+    if(state.compLifecycleCycle !== cIdx){
+      state.compLifecycleCycle = cIdx;
+      state.compLifecycleTrios = competitorRoundTrios();
+    }
+  }
+
+  /** Glean view: wheel capped at 200%. */
   const GLEAN_CAMERA_START_SCALE = 1;
   const GLEAN_CAMERA_MAX_SCALE = 2;
   const GLEAN_CAMERA_MIN_SCALE = 0.35;
-  /** Competitor view: start at 100% zoom (1:1 world units vs viewBox). */
   const COMPETITOR_CAMERA_START_SCALE = 1;
-  /** LLM row: rect width (must match nodeSize) and X gap between adjacent LLM cards. */
-  const LLM_NODE_RECT_W = 170;
+  /** LLM nodes match datasource nodes: circle + icon only (same radius). */
+  const LLM_NODE_R = 34;
   const LLM_NODE_GAP_X = 10;
-
-  let gleanTravelers = null;
-  let competitorTravelers = null;
-  let travelerViewMode = null;
-  let travelerGraphDetail = null;
-  let travelerGeomStale = false;
 
   const COLLAPSE_HUB_ORDER = [
     'hub-pers-people','hub-pers-teams','hub-pers-projects','hub-pers-meetings','hub-pers-documents',
     'hub-ent-teams','hub-ent-departments','hub-ent-edocs','hub-ent-partners','hub-ent-opportunities','hub-ent-accounts','hub-ent-datasources'
   ];
+
+  /** Summary view: enterprise hubs only (data sources are separate nodes, not this hub). */
+  const COLLAPSE_HUB_ENTERPRISE_NO_DS = [
+    'hub-ent-teams','hub-ent-departments','hub-ent-edocs','hub-ent-partners','hub-ent-opportunities','hub-ent-accounts'
+  ];
+
+  const HUB_GAP_X = 15;
 
   const SECTION_HUB_SPECS = [
     { id:'hub-pers-people', layer:'personal', group:'people', title:'People', listKey:'people' },
@@ -867,228 +1083,170 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return a;
   }
 
-  function buildAdjacencyNoLlm(){
-    const adj = {};
-    const link = (x, y) => {
-      if(!adj[x]) adj[x] = [];
-      if(!adj[y]) adj[y] = [];
-      if(!adj[x].includes(y)){
-        adj[x].push(y);
-        adj[y].push(x);
-      }
-    };
-    currentVisibleEdges.forEach(e => {
-      const A = nodeById[e.a];
-      const B = nodeById[e.b];
+  function posFromMap(id, posMap){
+    const p = posMap[id];
+    if(p) return p;
+    const n = nodeById[id];
+    return n ? { x: n.x, y: n.y } : null;
+  }
+
+  function distSeg(aId, bId, posMap){
+    const a = posFromMap(aId, posMap);
+    const b = posFromMap(bId, posMap);
+    if(!a || !b) return 1;
+    return Math.max(1e-6, Math.hypot(b.x - a.x, b.y - a.y));
+  }
+
+  function gleanLifecycleVisual(now, startMs, posMap){
+    const docId = GLEAN_OUTPUT_DOC_ID;
+    const elapsed = (now - startMs) / 1000;
+    const { tRaw, plan, pathDur } = gleanLocalTimeInCycle(elapsed);
+    const visitedIds = computeGleanVisitedNodeIds(tRaw, plan, pathDur);
+    const circles = [];
+
+    const interp = (aId, bId, frac, cls) => {
+      const A = posFromMap(aId, posMap);
+      const B = posFromMap(bId, posMap);
       if(!A || !B) return;
-      if(A.kind === 'llm' || B.kind === 'llm') return;
-      link(e.a, e.b);
-    });
-    return adj;
-  }
+      circles.push({
+        x: A.x + (B.x - A.x) * frac,
+        y: A.y + (B.y - A.y) * frac,
+        cls: cls || 'traveler'
+      });
+    };
 
-  function bfsPathOnAdj(adj, start, goal){
-    if(start === goal) return [start];
-    const queue = [[start]];
-    const seen = new Set([start]);
-    while(queue.length){
-      const path = queue.shift();
-      const cur = path[path.length - 1];
-      for(const nxt of adj[cur] || []){
-        if(seen.has(nxt)) continue;
-        if(nxt === goal) return path.concat(nxt);
-        seen.add(nxt);
-        queue.push(path.concat(nxt));
+    if(tRaw >= pathDur){
+      return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length, visitedIds: new Set() };
+    }
+
+    if(!plan || !plan.travelers || !plan.travelers.length){
+      return { circles, docCharCount: 0, visitedIds };
+    }
+
+    const maxE = Math.max(...plan.travelers.map(tr => Math.max(1, tr.pathToLlm.length - 1)), 1);
+    const toLlmDur = maxE * TRAVELER_SEGMENT_SEC;
+
+    if(tRaw < toLlmDur){
+      plan.travelers.forEach(tr => {
+        const path = tr.pathToLlm;
+        const E = path.length - 1;
+        if(E < 1) return;
+        const segIdx = Math.floor(tRaw / TRAVELER_SEGMENT_SEC);
+        const frac = Math.min(1, (tRaw % TRAVELER_SEGMENT_SEC) / TRAVELER_SEGMENT_SEC);
+        if(segIdx >= E){
+          const at = posFromMap(path[E], posMap);
+          if(at) circles.push({ x: at.x, y: at.y, cls: 'traveler' });
+        } else {
+          interp(path[segIdx], path[segIdx + 1], frac, 'traveler');
+        }
+      });
+      return { circles, docCharCount: 0, visitedIds };
+    }
+
+    const tDoc = tRaw - toLlmDur;
+    if(tDoc < TRAVELER_SEGMENT_SEC){
+      const frac = Math.min(1, tDoc / TRAVELER_SEGMENT_SEC);
+      if(frac < 1){
+        interp(plan.targetLlm, docId, frac, 'llmTraveler');
       }
+      return { circles, docCharCount: 0, visitedIds };
     }
-    return null;
+
+    const tType = tDoc - TRAVELER_SEGMENT_SEC;
+    const docCharCount = Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(tType * TYPING_CHARS_PER_SEC));
+    return { circles, docCharCount, visitedIds };
   }
 
-  function isPersonalKgNode(n){
-    return n && (n.kind === 'memory' || n.layer === 'personal');
-  }
-
-  function enterpriseNodeIds(){
-    return visibleNodes().filter(n => n.layer === 'enterprise').map(n => n.id);
-  }
-
-  function randomWalkNoLlm(adj, start, steps){
-    const path = [start];
-    let cur = start;
-    for(let i = 0; i < steps; i++){
-      const nbrs = (adj[cur] || []).filter(id => nodeById[id] && nodeById[id].kind !== 'llm');
-      if(!nbrs.length) break;
-      const prev = path.length >= 2 ? path[path.length - 2] : null;
-      const prefer = prev ? nbrs.filter(x => x !== prev) : nbrs;
-      const pickFrom = prefer.length ? prefer : nbrs;
-      const nxt = pickFrom[randomPathInt(pickFrom.length)];
-      path.push(nxt);
-      cur = nxt;
-    }
-    return path;
-  }
-
-  function concatNodePaths(parts){
+  function competitorRoundTrios(){
+    const ids = (data.dataSources || []).map(d => d.id);
     const out = [];
-    parts.forEach(p => {
-      if(!p || !p.length) return;
-      if(!out.length) out.push(...p);
-      else if(out[out.length - 1] === p[0]) out.push(...p.slice(1));
-      else out.push(...p);
-    });
+    for(let r = 0; r < 3; r++){
+      const t = shufflePathIds(ids.slice());
+      out.push([t[0], t[1 % Math.max(1, t.length)], t[2 % Math.max(1, t.length)]].filter(Boolean));
+    }
     return out;
   }
 
-  function buildGleanTravelPath(){
+  function competitorLifecycleVisual(now, startMs, posMap, trios){
     const uid = data.user.id;
-    const adj = buildAdjacencyNoLlm();
-    const perNbrs = (adj[uid] || []).filter(id => isPersonalKgNode(nodeById[id]));
-    const entIds = enterpriseNodeIds();
-    const parts = [];
+    const llm = 'comp-llm';
+    const docId = COMP_OUTPUT_DOC_ID;
+    const { pathDur, cycleLen } = compCycleTiming();
+    const elapsed = (now - startMs) / 1000;
+    const tRaw = elapsed - Math.floor(elapsed / cycleLen) * cycleLen;
+    const circles = [];
+    const dsIds = (data.dataSources || []).map(d => d.id);
 
-    if(perNbrs.length){
-      const p0 = perNbrs[randomPathInt(perNbrs.length)];
-      parts.push([uid, p0]);
-      const walk = randomWalkNoLlm(adj, p0, 2 + randomPathInt(5));
-      parts.push(walk.slice(1));
-      const walkEnd = walk[walk.length - 1];
-      const atEnt = nodeById[walkEnd] && nodeById[walkEnd].layer === 'enterprise';
-      if(entIds.length && !atEnt){
-        let hop = null;
-        for(const eid of shufflePathIds(entIds)){
-          hop = bfsPathOnAdj(adj, walkEnd, eid);
-          if(hop && hop.length > 1) break;
+    const interp = (aId, bId, frac, cls) => {
+      const A = posFromMap(aId, posMap);
+      const B = posFromMap(bId, posMap);
+      if(!A || !B) return;
+      circles.push({
+        x: A.x + (B.x - A.x) * frac,
+        y: A.y + (B.y - A.y) * frac,
+        cls: cls || 'traveler'
+      });
+    };
+
+    if(tRaw >= pathDur){
+      return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length };
+    }
+
+    let t = tRaw;
+
+    if(!dsIds.length){
+      if(t < TRAVELER_SEGMENT_SEC){
+        interp(uid, llm, Math.min(1, t / TRAVELER_SEGMENT_SEC), 'traveler');
+        return { circles, docCharCount: 0 };
+      }
+      t -= TRAVELER_SEGMENT_SEC;
+      if(t < TRAVELER_SEGMENT_SEC){
+        const fd = Math.min(1, t / TRAVELER_SEGMENT_SEC);
+        if(fd < 1) interp(llm, docId, fd, 'llmTraveler');
+        return { circles, docCharCount: 0 };
+      }
+      t -= TRAVELER_SEGMENT_SEC;
+      return { circles, docCharCount: Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(t * TYPING_CHARS_PER_SEC)) };
+    }
+
+    const triosStable = trios && trios.length ? trios : competitorRoundTrios();
+
+    if(t < TRAVELER_SEGMENT_SEC){
+      interp(uid, llm, Math.min(1, t / TRAVELER_SEGMENT_SEC), 'traveler');
+      return { circles, docCharCount: 0 };
+    }
+    t -= TRAVELER_SEGMENT_SEC;
+
+    for(let r = 0; r < 3; r++){
+      const trio = triosStable[r] || [];
+      if(t < TRAVELER_SEGMENT_SEC){
+        const frac = Math.min(1, t / TRAVELER_SEGMENT_SEC);
+        for(let i = 0; i < 3; i++){
+          if(trio[i]) interp(llm, trio[i], frac, 'llmTraveler');
         }
-        if(hop) parts.push(hop.slice(1));
+        return { circles, docCharCount: 0 };
       }
-      const tail = parts.length ? parts[parts.length - 1] : null;
-      let curBack = Array.isArray(tail) ? tail[tail.length - 1] : uid;
-      if(typeof curBack !== 'string') curBack = uid;
-      const back = bfsPathOnAdj(adj, curBack, uid);
-      if(back && back.length > 1) parts.push(back.slice(1));
-    } else if(entIds.length){
-      const e0 = entIds[randomPathInt(entIds.length)];
-      const toEnt = bfsPathOnAdj(adj, uid, e0);
-      if(toEnt) parts.push(toEnt);
-      const back = bfsPathOnAdj(adj, e0, uid);
-      if(back && back.length > 1) parts.push(back.slice(1));
-    }
+      t -= TRAVELER_SEGMENT_SEC;
 
-    const llmIds = data.llms.map(l => l.id).filter(id => nodeById[id]);
-    if(llmIds.length){
-      const L = llmIds[randomPathInt(llmIds.length)];
-      parts.push([uid, L, uid]);
-    }
-
-    let path = concatNodePaths(parts);
-    if(path.length < 2 && llmIds.length) path = [uid, llmIds[0], uid];
-    if(path.length < 2) path = [uid];
-    return path;
-  }
-
-  function buildCompetitorTravelPath(){
-    const uid = data.user.id;
-    const dss = data.dataSources || [];
-    if(!dss.length) return [uid, 'comp-llm', uid];
-    const ds = dss[randomPathInt(dss.length)];
-    return [uid, 'comp-llm', ds.id, 'comp-llm', uid];
-  }
-
-  function pathGeomFromIds(ids){
-    const pts = [];
-    ids.forEach(id => {
-      const n = nodeById[id];
-      if(n) pts.push({ x: n.x, y: n.y, id });
-    });
-    if(pts.length < 2) return { pts, segs: [], total: 0 };
-    const segs = [];
-    let total = 0;
-    for(let i = 0; i < pts.length - 1; i++){
-      const dx = pts[i + 1].x - pts[i].x;
-      const dy = pts[i + 1].y - pts[i].y;
-      const len = Math.hypot(dx, dy);
-      const na = nodeById[pts[i].id];
-      const nb = nodeById[pts[i + 1].id];
-      const llmLeg = na && nb && (na.kind === 'llm' || nb.kind === 'llm');
-      segs.push({ len, llmLeg });
-      total += len;
-    }
-    return { pts, segs, total };
-  }
-
-  function positionOnPathGeom(geom, distAlong){
-    if(!geom.pts.length) return { x: 0, y: 0, cls: 'traveler' };
-    if(geom.total < 1e-6) return { x: geom.pts[0].x, y: geom.pts[0].y, cls: 'traveler' };
-    let d = distAlong;
-    for(let i = 0; i < geom.segs.length; i++){
-      const sl = geom.segs[i].len;
-      const lastSeg = i === geom.segs.length - 1;
-      if(d <= sl || lastSeg){
-        const t = sl > 1e-9 ? Math.min(1, d / sl) : 0;
-        const p0 = geom.pts[i];
-        const p1 = geom.pts[i + 1];
-        return {
-          x: p0.x + (p1.x - p0.x) * t,
-          y: p0.y + (p1.y - p0.y) * t,
-          cls: geom.segs[i].llmLeg ? 'llmTraveler' : 'traveler'
-        };
+      if(t < TRAVELER_SEGMENT_SEC){
+        const frac = Math.min(1, t / TRAVELER_SEGMENT_SEC);
+        for(let i = 0; i < 3; i++){
+          if(trio[i]) interp(trio[i], llm, frac, 'traveler');
+        }
+        return { circles, docCharCount: 0 };
       }
-      d -= sl;
+      t -= TRAVELER_SEGMENT_SEC;
     }
-    const last = geom.pts[geom.pts.length - 1];
-    return { x: last.x, y: last.y, cls: 'traveler' };
-  }
 
-  function createGleanTraveler(now){
-    const tr = {
-      birthRef: now,
-      delayMs: Math.random() * GLEAN_TRAVELER_STAGGER_MS,
-      cycleStartMs: null,
-      pathIds: [],
-      geom: { pts: [], segs: [], total: 0 },
-      regen(){
-        this.pathIds = buildGleanTravelPath();
-        this.geom = pathGeomFromIds(this.pathIds);
-      }
-    };
-    tr.regen();
-    return tr;
-  }
-
-  function createCompetitorTraveler(now){
-    const tr = {
-      birthRef: now,
-      delayMs: Math.random() * COMPETITOR_TRAVELER_STAGGER_MS,
-      cycleStartMs: null,
-      pathIds: [],
-      geom: { pts: [], segs: [], total: 0 },
-      regen(){
-        this.pathIds = buildCompetitorTravelPath();
-        this.geom = pathGeomFromIds(this.pathIds);
-      }
-    };
-    tr.regen();
-    return tr;
-  }
-
-  function sampleTravelerMotion(tr, now){
-    const uid = data.user.id;
-    const u = nodeById[uid];
-    const fallback = { x: u ? u.x : 0, y: u ? u.y : 0, cls: 'traveler' };
-    if(!tr.geom || tr.geom.total < 1e-6){
-      tr.regen();
-      if(!tr.geom || tr.geom.total < 1e-6) return fallback;
+    if(t < TRAVELER_SEGMENT_SEC){
+      const fd = Math.min(1, t / TRAVELER_SEGMENT_SEC);
+      if(fd < 1) interp(llm, docId, fd, 'llmTraveler');
+      return { circles, docCharCount: 0 };
     }
-    if(now < tr.birthRef + tr.delayMs) return fallback;
-    if(tr.cycleStartMs === null) tr.cycleStartMs = now;
-    const speed = TRAVELER_SPEED / 1000;
-    let dist = (now - tr.cycleStartMs) * speed;
-    while(dist >= tr.geom.total && tr.geom.total > 1e-6){
-      tr.regen();
-      tr.cycleStartMs = now;
-      dist = 0;
-    }
-    return positionOnPathGeom(tr.geom, dist);
+    t -= TRAVELER_SEGMENT_SEC;
+
+    const docCharCount = Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(t * TYPING_CHARS_PER_SEC));
+    return { circles, docCharCount };
   }
 
   function normalizeData(raw){
@@ -1172,6 +1330,37 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return normalized;
   }
 
+  function ensureOutputDocNodes(){
+    if(!nodeById[GLEAN_OUTPUT_DOC_ID]){
+      nodeById[GLEAN_OUTPUT_DOC_ID] = {
+        id: GLEAN_OUTPUT_DOC_ID,
+        label: 'Answer',
+        subtitle: 'Generated output',
+        kind: 'outputDoc',
+        layer: 'output',
+        group: 'output',
+        desc: 'Grounded response document.',
+        icon: 'file-text',
+        x: 0,
+        y: 0
+      };
+    }
+    if(!nodeById[COMP_OUTPUT_DOC_ID]){
+      nodeById[COMP_OUTPUT_DOC_ID] = {
+        id: COMP_OUTPUT_DOC_ID,
+        label: 'Answer',
+        subtitle: 'Generated output',
+        kind: 'outputDoc',
+        layer: 'output',
+        group: 'output',
+        desc: 'Competitor response document.',
+        icon: 'file-text',
+        x: 0,
+        y: 0
+      };
+    }
+  }
+
   function rebuildNodes(){
     allNodes = [
       data.user,
@@ -1188,19 +1377,26 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       ...data.partners,
       ...data.opportunities,
       ...data.accounts,
-      ...data.dataSources,
-      ...data.actions
+      ...data.dataSources
     ];
     allNodes.forEach(node => { nodeById[node.id] = node; });
     ensureSectionHubNodes();
+    ensureOutputDocNodes();
+    allNodes.push(nodeById[GLEAN_OUTPUT_DOC_ID], nodeById[COMP_OUTPUT_DOC_ID]);
   }
 
   function gleanCollapsedNodesList(){
     ensureSectionHubNodes();
+    ensureOutputDocNodes();
+    const persHubs = COLLAPSE_HUB_ORDER.slice(0, 5).map(id => nodeById[id]).filter(Boolean);
+    const entHubs = COLLAPSE_HUB_ENTERPRISE_NO_DS.map(id => nodeById[id]).filter(Boolean);
     return [
       data.user,
       ...data.llms,
-      ...COLLAPSE_HUB_ORDER.map(id => nodeById[id]).filter(Boolean)
+      ...persHubs,
+      ...entHubs,
+      ...data.dataSources,
+      nodeById[GLEAN_OUTPUT_DOC_ID]
     ];
   }
 
@@ -1209,26 +1405,38 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const edges = [];
     const t = 'bridge';
     const pers = ['hub-pers-people','hub-pers-teams','hub-pers-projects','hub-pers-meetings','hub-pers-documents'];
-    const ent = ['hub-ent-teams','hub-ent-departments','hub-ent-edocs','hub-ent-partners','hub-ent-opportunities','hub-ent-accounts','hub-ent-datasources'];
-    const link = (a, b) => edges.push({ a, b, type: t });
+    const ent = COLLAPSE_HUB_ENTERPRISE_NO_DS.slice();
+    const link = (a, b, ty) => edges.push({ a, b, type: ty || t });
     pers.forEach(id => { if(nodeById[id]) link(uid, id); });
     ent.forEach(id => { if(nodeById[id]) link(uid, id); });
-    for(let i = 0; i < pers.length - 1; i++){
-      if(nodeById[pers[i]] && nodeById[pers[i + 1]]) link(pers[i], pers[i + 1]);
+    data.dataSources.forEach(ds => { if(nodeById[ds.id]) link(uid, ds.id); });
+    const persIds = pers.map(id => nodeById[id] && id).filter(Boolean);
+    const entIds = ent.map(id => nodeById[id] && id).filter(Boolean).concat(data.dataSources.map(ds => nodeById[ds.id] && ds.id).filter(Boolean));
+    for(let i = 0; i < persIds.length; i++){
+      for(let j = i + 1; j < persIds.length; j++){
+        link(persIds[i], persIds[j]);
+      }
     }
-    for(let i = 0; i < ent.length - 1; i++){
-      if(nodeById[ent[i]] && nodeById[ent[i + 1]]) link(ent[i], ent[i + 1]);
+    for(let i = 0; i < entIds.length; i++){
+      for(let j = i + 1; j < entIds.length; j++){
+        link(entIds[i], entIds[j]);
+      }
     }
-    if(nodeById[pers[pers.length - 1]] && nodeById[ent[0]]) link(pers[pers.length - 1], ent[0]);
+    persIds.forEach(p => {
+      entIds.forEach(e => link(p, e));
+    });
+    const meshIds = persIds.concat(entIds);
     data.llms.forEach(llm => {
-      if(nodeById[llm.id]) link(llm.id, uid);
+      if(!nodeById[llm.id]) return;
+      meshIds.forEach(nid => link(nid, llm.id, 'llm'));
+      if(nodeById[GLEAN_OUTPUT_DOC_ID]) link(llm.id, GLEAN_OUTPUT_DOC_ID, 'llm');
     });
     return edges;
   }
 
   rebuildNodes();
 
-  function competitorNodes(){
+  function ensureCompLlmNode(){
     if(!nodeById['comp-llm']){
       nodeById['comp-llm'] = {
         id:'comp-llm',
@@ -1243,13 +1451,24 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         y:0
       };
     }
-    return [data.user, ...data.dataSources, nodeById['comp-llm'], ...data.actions];
   }
 
-  function visibleNodes(){
-    if(state.view === 'competitor') return competitorNodes();
+  function competitorNodes(){
+    ensureOutputDocNodes();
+    ensureCompLlmNode();
+    return [data.user, ...data.dataSources, nodeById['comp-llm'], nodeById[COMP_OUTPUT_DOC_ID]];
+  }
+
+  function visibleNodesGlean(){
     if(state.graphDetail === 'collapsed') return gleanCollapsedNodesList();
-    return allNodes;
+    ensureOutputDocNodes();
+    const base = allNodes.filter(n => n.id !== COMP_OUTPUT_DOC_ID);
+    if(!base.some(n => n.id === GLEAN_OUTPUT_DOC_ID)) base.push(nodeById[GLEAN_OUTPUT_DOC_ID]);
+    return base;
+  }
+
+  function visibleNodesComp(){
+    return competitorNodes();
   }
 
   const WRITING_CONTEXT_ID = 'action-writing-context';
@@ -1403,27 +1622,80 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     });
   }
 
-  function toolSunRayEdges(){
-    if(state.view === 'glean' && state.graphDetail === 'collapsed') return [];
-    return data.actions
-      .filter(a => a.parent && nodeById[a.parent])
-      .map(a => ({ a: a.parent, b: a.id, type: 'tool' }));
+  function toolSunRayEdgesGlean(){
+    return [];
   }
 
-  function visibleEdges(){
-    if(state.view === 'competitor'){
-      return data.dataSources.map(ds => ({a:data.user.id,b:ds.id,type:'competitor'}))
-        .concat(data.dataSources.map(ds => ({a:'comp-llm',b:ds.id,type:'competitor'})))
-        .concat([{a:data.user.id,b:'comp-llm',type:'competitor'}])
-        .concat(toolSunRayEdges());
+  function toolSunRayEdgesComp(){
+    return [];
+  }
+
+  function dedupeUndirectedEdges(edges){
+    const seen = new Set();
+    const out = [];
+    edges.forEach(e => {
+      const k = e.a < e.b ? `${e.a}|${e.b}|${e.type || ''}` : `${e.b}|${e.a}|${e.type || ''}`;
+      if(seen.has(k)) return;
+      seen.add(k);
+      out.push(e);
+    });
+    return out;
+  }
+
+  function isUserLlmEdge(edge){
+    const uid = data.user.id;
+    const llmSet = new Set(data.llms.map(l => l.id));
+    return (edge.a === uid && llmSet.has(edge.b)) || (edge.b === uid && llmSet.has(edge.a));
+  }
+
+  function expandedGleanDenseEdges(){
+    const edges = [];
+    const pers = personalKnowledgeNodeIds();
+    const ent = enterpriseKnowledgeNodeIds();
+    const llmIds = data.llms.map(l => l.id).filter(id => nodeById[id]);
+    const link = (a, b, ty) => {
+      if(nodeById[a] && nodeById[b]) edges.push({ a, b, type: ty || 'bridge' });
+    };
+    for(let i = 0; i < pers.length; i++){
+      for(let j = i + 1; j < pers.length; j++){
+        link(pers[i], pers[j]);
+      }
     }
+    for(let i = 0; i < ent.length; i++){
+      for(let j = i + 1; j < ent.length; j++){
+        link(ent[i], ent[j]);
+      }
+    }
+    pers.forEach(p => {
+      ent.forEach(e => link(p, e));
+    });
+    const mesh = pers.concat(ent);
+    llmIds.forEach(lid => {
+      mesh.forEach(nid => link(nid, lid, 'llm'));
+      if(nodeById[GLEAN_OUTPUT_DOC_ID]) link(lid, GLEAN_OUTPUT_DOC_ID, 'llm');
+    });
+    return edges;
+  }
+
+  function visibleEdgesGlean(){
     if(state.graphDetail === 'collapsed') return collapsedGleanEdges();
     const base = (data.edges || []).map(edge => ({
       a: edge.a || edge.source,
       b: edge.b || edge.target,
       type: edge.type || edge.kind || 'bridge'
-    })).filter(edge => nodeById[edge.a] && nodeById[edge.b]);
-    return base.concat(toolSunRayEdges());
+    })).filter(edge => nodeById[edge.a] && nodeById[edge.b]).filter(e => !isUserLlmEdge(e));
+    const dense = expandedGleanDenseEdges();
+    return dedupeUndirectedEdges(base.concat(dense).concat(toolSunRayEdgesGlean()));
+  }
+
+  function visibleEdgesCompetitor(){
+    const uid = data.user.id;
+    const edges = [{ a: uid, b: 'comp-llm', type: 'competitor' }];
+    data.dataSources.forEach(ds => {
+      edges.push({ a: 'comp-llm', b: ds.id, type: 'competitor' });
+    });
+    edges.push({ a: 'comp-llm', b: COMP_OUTPUT_DOC_ID, type: 'competitor' });
+    return edges.concat(toolSunRayEdgesComp());
   }
 
   function gridAssign(list,x0,x1,y0,stepY,cols){
@@ -1451,7 +1723,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const lo = x0 + pad;
     const hi = x1 - pad;
     const mid = (lo + hi) / 2;
-    const w = LLM_NODE_RECT_W;
+    const w = 2 * LLM_NODE_R;
     const g = LLM_NODE_GAP_X;
     if(n === 1){
       list[0].x = mid;
@@ -1477,7 +1749,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   }
 
   function layoutGlean(){
-    const CX = 1000;
+    const USER_X = 280;
     const LAYER_MIN_W = 960;
     const LAYER_MAX_W = 1960;
     const LAYER_RX = 28;
@@ -1496,18 +1768,65 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       return layerIdx >= 2 ? base * 1.4 : base;
     }
 
-    function pyramidBounds(layerIdx, widthScale){
+    /** Full graph: shift pyramid so memory ring (~200px) has 150px clear of layer grid (label column). */
+    const RING_GRAPH_GAP = 150;
+    /** Additional shift left (negative x) for user + memory ring in expanded/full graph view. */
+    const FULL_GRAPH_USER_EXTRA_NX = 250;
+    const pyramidCenterX = state.graphDetail === 'expanded'
+      ? (80 + 200 + RING_GRAPH_GAP - LABEL_COL_W) + pyramidWidth(2) / 2
+      : 1180;
+
+    function pyramidBounds(layerIdx, widthScale, centerX){
+      const cx = centerX != null ? centerX : pyramidCenterX;
       const scale = widthScale != null ? widthScale : 1;
       const w = pyramidWidth(layerIdx) * scale;
-      return { x0: CX - w / 2, x1: CX + w / 2, w };
+      return { x0: cx - w / 2, x1: cx + w / 2, w };
     }
 
-    function registerLayer(layerIdx, yTop, height, title, subtitle, widthScale){
-      const b = pyramidBounds(layerIdx, widthScale);
+    function registerLayer(layerIdx, yTop, height, title, subtitle, widthScale, centerX){
+      const b = pyramidBounds(layerIdx, widthScale, centerX);
       layoutGeom.layers.push({ x: b.x0, y: yTop, w: b.w, h: height, rx: LAYER_RX });
       layoutGeom.bandTexts.push({ x: b.x0 + 34, y: yTop + 22, text: title, cls: 'bandLabel' });
       layoutGeom.bandTexts.push({ x: b.x0 + 34, y: yTop + 42, text: subtitle, cls: 'bandSub' });
       return { ...b, yTop, yBottom: yTop + height };
+    }
+
+    function placeUserAndMemories(midY, l2x0){
+      if(state.graphDetail === 'expanded' && l2x0 != null){
+        const ringR = 200;
+        data.user.x = l2x0 + LABEL_COL_W - RING_GRAPH_GAP - ringR - FULL_GRAPH_USER_EXTRA_NX;
+      } else {
+        data.user.x = USER_X;
+      }
+      data.user.y = midY;
+      const memN = data.memories.length;
+      data.memories.forEach((n, i) => {
+        const angle = (-Math.PI / 2) + (i / Math.max(1, memN)) * Math.PI * 2;
+        n.x = data.user.x + Math.cos(angle) * 200;
+        n.y = data.user.y + Math.sin(angle) * 150;
+      });
+    }
+
+    function placeOutputDocRight(bandMaxX, viewHeight){
+      ensureOutputDocNodes();
+      const odoc = nodeById[GLEAN_OUTPUT_DOC_ID];
+      const docH = viewHeight / 3;
+      const docW = 320;
+      odoc.outputH = docH;
+      odoc.outputW = docW;
+      odoc.x = bandMaxX + 70 + docW / 2;
+      odoc.y = viewHeight / 2;
+    }
+
+    function hubCentersWithGap(gLeft, gRight, n){
+      if(n <= 0) return [];
+      const inner = (gRight - gLeft) - Math.max(0, n - 1) * HUB_GAP_X;
+      const slotW = inner / n;
+      const centers = [];
+      for(let i = 0; i < n; i++){
+        centers.push(gLeft + i * (slotW + HUB_GAP_X) + slotW / 2);
+      }
+      return centers;
     }
 
     layoutGeom.layers = [];
@@ -1516,85 +1835,99 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     ensureSectionHubNodes();
 
     if(state.graphDetail === 'collapsed'){
-      const summaryLayerW = 0.5;
-      const summaryLlmLayerW = 0.64;
+      const summaryLayerW = 0.38;
+      const SUMMARY_EDGE_PAD = 15;
+      const ROW_STACK_GAP = 15;
       let y = 40;
-      const h0 = Math.max(124, 88 + ROW_LLM);
-      const L0 = registerLayer(0, y, h0, 'LLM Providers', 'Model interfaces above the user', summaryLlmLayerW);
-      const llmY = L0.yTop + 58 + ROW_LLM / 2;
-      llmAssignFixedGap(data.llms, L0.x0 + 20, L0.x1 - 20, llmY, 10);
-      y = L0.yBottom + LAYER_GAP;
-
-      const memN = data.memories.length;
-      const h1 = Math.max(372, memN > 0 ? 436 : 368);
-      const L1 = registerLayer(1, y, h1, 'User', 'Identity and memory ring', summaryLayerW);
-      data.user.x = CX;
-      data.user.y = L1.yTop + h1 / 2 + 6;
-      y = L1.yBottom + LAYER_GAP;
-
       const personalHubIds = ['hub-pers-people','hub-pers-teams','hub-pers-projects','hub-pers-meetings','hub-pers-documents'];
-      const enterpriseHubIds = ['hub-ent-teams','hub-ent-departments','hub-ent-edocs','hub-ent-partners','hub-ent-opportunities','hub-ent-accounts','hub-ent-datasources'];
-      const persLabels = ['People','Teams','Projects','Meetings','Documents'];
-      const entLabels = ['Org nodes','Departments','Enterprise docs','Partners','Opportunities','Accounts','Data sources'];
+      const enterpriseHubIds = COLLAPSE_HUB_ENTERPRISE_NO_DS.slice();
 
-      const h2 = 56 + SEC_GRID_TOP + ROW_RECT + 44;
+      const b2pre = pyramidBounds(2, summaryLayerW);
+      const hLlmBand = 56 + ROW_LLM + 24;
+      const llmY = y + 56 + ROW_LLM / 2;
+      llmAssignFixedGap(data.llms, b2pre.x0 + 24, b2pre.x1 - 24, llmY, 15);
+      y += hLlmBand + LAYER_GAP;
+
+      const h2 = 56 + SEC_GRID_TOP + ROW_RECT + ROW_STACK_GAP + ROW_RECT + 44;
       const L2 = registerLayer(2, y, h2, 'Personal Knowledge Graph', 'People, teams, projects, meetings, and active docs', summaryLayerW);
-      const gLeft2 = L2.x0 + LABEL_COL_W;
-      const gRight2 = L2.x1 - INNER_PAD_R;
-      const colPW = (gRight2 - gLeft2) / personalHubIds.length;
-      personalHubIds.forEach((hid, i) => {
+      const gLeft2 = L2.x0 + LABEL_COL_W + SUMMARY_EDGE_PAD;
+      const gRight2 = L2.x1 - INNER_PAD_R - SUMMARY_EDGE_PAD;
+      const nPers1 = Math.ceil(personalHubIds.length / 2);
+      const persRow1 = personalHubIds.slice(0, nPers1);
+      const persRow2 = personalHubIds.slice(nPers1);
+      const yPersTop = L2.yTop + 56 + SEC_GRID_TOP + ROW_RECT / 2;
+      const yPersBot = yPersTop + ROW_RECT + ROW_STACK_GAP;
+      const persCx1 = hubCentersWithGap(gLeft2, gRight2, persRow1.length);
+      const persCx2 = hubCentersWithGap(gLeft2, gRight2, persRow2.length);
+      persRow1.forEach((hid, i) => {
         const hn = nodeById[hid];
         if(!hn) return;
-        hn.x = gLeft2 + colPW * (i + 0.5);
-        hn.y = L2.yTop + 56 + SEC_GRID_TOP + ROW_RECT / 2;
-        layoutGeom.sections.push({ x: hn.x - 40, y: L2.yTop + 56 + SEC_LABEL_TOP, label: persLabels[i] });
+        hn.x = persCx1[i];
+        hn.y = yPersTop;
+      });
+      persRow2.forEach((hid, i) => {
+        const hn = nodeById[hid];
+        if(!hn) return;
+        hn.x = persCx2[i];
+        hn.y = yPersBot;
       });
       y = L2.yBottom + LAYER_GAP;
 
-      const h3 = 56 + SEC_GRID_TOP + ROW_RECT + 48;
-      const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org, departments, enterprise docs, partners, CRM, data sources', summaryLayerW);
-      const gLeft3 = L3.x0 + LABEL_COL_W;
-      const gRight3 = L3.x1 - INNER_PAD_R;
-      const colEW = (gRight3 - gLeft3) / enterpriseHubIds.length;
-      enterpriseHubIds.forEach((hid, i) => {
+      const ROW_DS = 72;
+      const h3 = 56 + SEC_GRID_TOP + ROW_RECT + ROW_STACK_GAP + ROW_RECT + 24 + ROW_DS + 36;
+      const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org, departments, enterprise docs, partners, CRM; data sources below', summaryLayerW);
+      const gLeft3 = L3.x0 + LABEL_COL_W + SUMMARY_EDGE_PAD;
+      const gRight3 = L3.x1 - INNER_PAD_R - SUMMARY_EDGE_PAD;
+      const nEnt1 = Math.ceil(enterpriseHubIds.length / 2);
+      const entRow1 = enterpriseHubIds.slice(0, nEnt1);
+      const entRow2 = enterpriseHubIds.slice(nEnt1);
+      const yEntTop = L3.yTop + 56 + SEC_GRID_TOP + ROW_RECT / 2;
+      const yEntBot = yEntTop + ROW_RECT + ROW_STACK_GAP;
+      const entCx1 = hubCentersWithGap(gLeft3, gRight3, entRow1.length);
+      const entCx2 = hubCentersWithGap(gLeft3, gRight3, entRow2.length);
+      entRow1.forEach((hid, i) => {
         const hn = nodeById[hid];
         if(!hn) return;
-        hn.x = gLeft3 + colEW * (i + 0.5);
-        hn.y = L3.yTop + 56 + SEC_GRID_TOP + ROW_RECT / 2;
-        layoutGeom.sections.push({ x: hn.x - 48, y: L3.yTop + 56 + SEC_LABEL_TOP, label: entLabels[i] });
+        hn.x = entCx1[i];
+        hn.y = yEntTop;
+      });
+      entRow2.forEach((hid, i) => {
+        const hn = nodeById[hid];
+        if(!hn) return;
+        hn.x = entCx2[i];
+        hn.y = yEntBot;
       });
 
-      const horizPad = 140;
-      let bandMinX = Infinity, bandMaxX = -Infinity;
-      layoutGeom.layers.forEach(L => {
-        bandMinX = Math.min(bandMinX, L.x);
-        bandMaxX = Math.max(bandMaxX, L.x + L.w);
-      });
-      layoutGeom.viewBoxX = Math.floor(bandMinX - horizPad);
-      layoutGeom.viewBoxW = Math.ceil(bandMaxX - bandMinX + 2 * horizPad);
-      layoutGeom.viewHeight = Math.max(900, y + h3 + 72);
+      const nDs = data.dataSources.length;
+      const dsY = yEntBot + ROW_RECT / 2 + 20 + 34;
+      if(nDs){
+        const dsCx = hubCentersWithGap(gLeft3, gRight3, nDs);
+        data.dataSources.forEach((ds, i) => {
+          ds.x = dsCx[i];
+          ds.y = dsY;
+        });
+      }
+
+      const midY = (L2.yTop + L3.yBottom) / 2;
+      placeUserAndMemories(midY, L2.x0);
+
+      let bandMaxX = -Infinity;
+      layoutGeom.layers.forEach(L => { bandMaxX = Math.max(bandMaxX, L.x + L.w); });
+      const viewHeight = Math.max(900, y + h3 + 72);
+      layoutGeom.viewHeight = viewHeight;
+      placeOutputDocRight(bandMaxX, viewHeight);
+      const docEdge = nodeById[GLEAN_OUTPUT_DOC_ID].x + (nodeById[GLEAN_OUTPUT_DOC_ID].outputW || 320) / 2;
+      layoutGeom.viewBoxX = 0;
+      layoutGeom.viewBoxW = Math.ceil(docEdge + 80);
       return;
     }
 
     let y = 40;
-
-    const h0 = Math.max(124, 88 + ROW_LLM);
-    const L0 = registerLayer(0, y, h0, 'LLM Providers', 'Model interfaces above the user');
-    const llmY = L0.yTop + 58 + ROW_LLM / 2;
-    llmAssignFixedGap(data.llms, L0.x0 + 40, L0.x1 - 40, llmY);
-    y = L0.yBottom + LAYER_GAP;
-
-    const memN = data.memories.length;
-    const h1 = Math.max(498, memN > 0 ? 528 : 384);
-    const L1 = registerLayer(1, y, h1, 'User', 'Identity and memory ring');
-    data.user.x = CX;
-    data.user.y = L1.yTop + h1 / 2 + 6;
-    data.memories.forEach((n,i)=>{
-      const angle = (-Math.PI / 2) + (i / Math.max(1, memN)) * Math.PI * 2;
-      n.x = data.user.x + Math.cos(angle) * 220;
-      n.y = data.user.y + Math.sin(angle) * 160;
-    });
-    y = L1.yBottom + LAYER_GAP;
+    const b2preExp = pyramidBounds(2);
+    const hLlmBandExp = 56 + ROW_LLM + 24;
+    const llmYExp = y + 56 + ROW_LLM / 2;
+    llmAssignFixedGap(data.llms, b2preExp.x0 + 40, b2preExp.x1 - 40, llmYExp);
+    y += hLlmBandExp + LAYER_GAP;
 
     const personalSections = [
       { list: data.people, label: 'People' },
@@ -1603,7 +1936,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       { list: data.meetings, label: 'Meetings' },
       { list: data.documents, label: 'Documents' }
     ];
-    let innerPersonal = 56;
+    let innerPersonal = 56 + SECTION_GAP;
     personalSections.forEach(sec => {
       const c = colsForCount(sec.list.length);
       innerPersonal += sec.list.length
@@ -1612,7 +1945,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     });
     const h2 = innerPersonal + 36;
     const L2 = registerLayer(2, y, h2, 'Personal Knowledge Graph', 'People, teams, projects, meetings, and active docs');
-    let yc = L2.yTop + 56;
+    let yc = L2.yTop + 56 + SECTION_GAP;
     const gLeft2 = L2.x0 + LABEL_COL_W;
     const gRight2 = L2.x1 - INNER_PAD_R;
     personalSections.forEach(sec => {
@@ -1634,29 +1967,18 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       { list: data.partners, label: 'Partners', rowStep: ROW_RECT, extra: 0 },
       { list: data.opportunities, label: 'Opportunities', rowStep: ROW_RECT, extra: 0 },
       { list: data.accounts, label: 'Accounts', rowStep: ROW_RECT, extra: 0 },
-      { list: data.dataSources, label: 'Data sources', rowStep: DS_DYNAMIC_ROW, extra: 0, dsTools: true }
+      { list: data.dataSources, label: 'Data sources', rowStep: ROW_RECT, extra: 0, singleRow: true }
     ];
-    const w3est = pyramidWidth(3);
-    const gAvailDs = w3est - LABEL_COL_W - INNER_PAD_R - 2 * ENT_LAYER_CONTENT_PAD;
-    const dsColsEst = pickColsForDatasourceGrid(data.dataSources.length, gAvailDs);
     let innerEnt = 56;
     enterpriseSections.forEach(sec => {
-      if(sec.dsTools){
-        const c = dsColsEst;
-        const rs = DS_DYNAMIC_ROW;
-        innerEnt += sec.list.length
-          ? SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP
-          : 36;
-      } else {
-        const c = colsForCount(sec.list.length);
-        const rs = sec.rowStep;
-        innerEnt += sec.list.length
-          ? SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP
-          : 36;
-      }
+      const c = sec.singleRow ? Math.max(1, sec.list.length) : colsForCount(sec.list.length);
+      const rs = sec.rowStep;
+      innerEnt += sec.list.length
+        ? SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP
+        : 36;
     });
     const h3 = innerEnt + 40;
-    const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org, departments, enterprise docs, partners, opportunities, accounts, data sources');
+    const L3 = registerLayer(3, y, h3, 'Enterprise Knowledge Graph', 'Org through CRM; data sources in one row below');
     yc = L3.yTop + 56;
     const gLeft3 = L3.x0 + LABEL_COL_W;
     const gRight3 = L3.x1 - INNER_PAD_R;
@@ -1666,77 +1988,58 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         yc += 36;
         return;
       }
-      if(sec.dsTools){
-        const gL = gLeft3 + ENT_LAYER_CONTENT_PAD;
-        const gR = gRight3 - ENT_LAYER_CONTENT_PAD;
-        const cols = pickColsForDatasourceGrid(sec.list.length, gR - gL);
-        gridAssignPacked(sec.list, gL, gR, yc + SEC_GRID_TOP, DS_DYNAMIC_ROW, cols);
-        sec.list.forEach(layoutDatasourceToolsRadial);
-        separateDatasourceClustersHoriz(sec.list);
-        clampDatasourceClustersToBand(gL, gR);
-        separateDatasourceClustersVertically(sec.list);
-        resolveDatasourceClustersNoOverlap(sec.list, gL, gR);
-        yc += SEC_GRID_TOP + gridBlockHeight(sec.list.length, cols, DS_DYNAMIC_ROW) + SECTION_GAP;
-      } else {
-        const c = colsForCount(sec.list.length);
-        const rs = sec.rowStep;
-        gridAssignPacked(sec.list, gLeft3, gRight3, yc + SEC_GRID_TOP, rs, c);
-        yc += SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP;
-      }
+      const c = sec.singleRow ? Math.max(1, sec.list.length) : colsForCount(sec.list.length);
+      const rs = sec.rowStep;
+      gridAssignPacked(sec.list, gLeft3, gRight3, yc + SEC_GRID_TOP, rs, c);
+      yc += SEC_GRID_TOP + gridBlockHeight(sec.list.length, c, rs) + SECTION_GAP;
     });
 
-    const horizPad = 140;
-    let bandMinX = Infinity, bandMaxX = -Infinity;
-    layoutGeom.layers.forEach(L => {
-      bandMinX = Math.min(bandMinX, L.x);
-      bandMaxX = Math.max(bandMaxX, L.x + L.w);
-    });
-    layoutGeom.viewBoxX = Math.floor(bandMinX - horizPad);
-    layoutGeom.viewBoxW = Math.ceil(bandMaxX - bandMinX + 2 * horizPad);
-    layoutGeom.viewHeight = Math.max(900, y + h3 + 72);
+    const midY = (L2.yTop + L3.yBottom) / 2;
+    placeUserAndMemories(midY, L2.x0);
+
+    let bandMaxX = -Infinity;
+    layoutGeom.layers.forEach(L => { bandMaxX = Math.max(bandMaxX, L.x + L.w); });
+    const viewHeight = Math.max(900, y + h3 + 72);
+    layoutGeom.viewHeight = viewHeight;
+    placeOutputDocRight(bandMaxX, viewHeight);
+    const docEdge = nodeById[GLEAN_OUTPUT_DOC_ID].x + (nodeById[GLEAN_OUTPUT_DOC_ID].outputW || 320) / 2;
+    layoutGeom.viewBoxX = 0;
+    layoutGeom.viewBoxW = Math.ceil(docEdge + 80);
   }
 
   function layoutCompetitor(){
+    ensureOutputDocNodes();
+    ensureCompLlmNode();
     const comp = nodeById['comp-llm'];
-    const ux = 1000;
-    const uy = 1680;
-    data.user.x = ux;
-    data.user.y = uy;
+    const doc = nodeById[COMP_OUTPUT_DOC_ID];
+    const VB_W = 2200;
+    const VB_H = 1800;
+    const llmX = VB_W / 2;
+    const llmY = VB_H / 2;
+    comp.x = llmX;
+    comp.y = llmY;
+    data.user.x = VB_W - 200;
+    data.user.y = llmY;
+    const docH = VB_H / 3;
+    const docW = 320;
+    doc.outputH = docH;
+    doc.outputW = docW;
+    doc.x = 160 + docW / 2;
+    doc.y = VB_H / 2;
     const n = data.dataSources.length;
-    const availW = 560;
-    const fanR = Math.min(220, availW / Math.max(2.8, Math.max(1, n) * 0.52));
-    const clusterW = 2 * (DS_TOOL_RAD_X + TOOL_NODE_R) + DS_TOOL_GAP;
-    let R = Math.max(fanR * 1.85, n > 0 ? (clusterW * n) / (2 * Math.PI) + 100 : 400);
-    const R_MAX = 1400;
-    const placeRing = r => {
-      data.dataSources.forEach((ds, i) => {
-        const ang = (-Math.PI / 2) + (i / Math.max(1, n)) * Math.PI * 2;
-        ds.x = ux + Math.cos(ang) * r;
-        ds.y = uy + Math.sin(ang) * r;
-      });
-      data.dataSources.forEach(layoutDatasourceToolsRadial);
-    };
-    let step = 0;
-    while(step < 48){
-      placeRing(R);
-      if(!datasourcePairwiseOverlap(data.dataSources)) break;
-      R += 36;
-      if(R > R_MAX) break;
-      step++;
-    }
-    placeRing(R);
-    comp.x = ux;
-    const llmYOuter = 520;
-    const ringAlongAxisY = uy - R;
-    comp.y = llmYOuter + (ringAlongAxisY - llmYOuter) * 0.5;
+    const R = 200;
+    data.dataSources.forEach((ds, i) => {
+      const ang = (-Math.PI / 2) + (i / Math.max(1, n)) * Math.PI * 2;
+      ds.x = llmX + Math.cos(ang) * R;
+      ds.y = llmY + Math.sin(ang) * R;
+    });
+    data.dataSources.forEach(layoutDatasourceToolsRadial);
   }
 
-  function layout(){
-    if(state.view === 'competitor') layoutCompetitor();
-    else layoutGlean();
+  function clearElement(el){
+    if(!el) return;
+    while(el.firstChild) el.removeChild(el.firstChild);
   }
-
-  function clearElement(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
   function svgEl(name, attrs={}){
     const n = document.createElementNS('http://www.w3.org/2000/svg', name);
@@ -1949,16 +2252,22 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(node.kind==='user') return {r:56};
     if(node.kind==='memory') return {r:28};
     if(node.kind==='sectionHub') return {w:200,h:74,rect:true};
-    if(node.kind==='llm') return {w:LLM_NODE_RECT_W,h:62,rect:true};
+    if(node.kind==='llm') return {r: LLM_NODE_R};
     if(node.kind==='datasource') return {r:34};
     if(node.kind==='tool') return {r:TOOL_NODE_R};
     if(node.kind==='doc') return {w:162,h:68,rect:true};
+    if(node.kind === 'outputDoc'){
+      const w = node.outputW != null ? node.outputW : 320;
+      const h = node.outputH != null ? node.outputH : 400;
+      return { w, h, rect: true };
+    }
     if(['team','partner','project','meeting','person'].includes(node.kind)) return {w:172,h:68,rect:true};
     return {r:24};
   }
 
-  function drawNode(node){
+  function drawNode(node, opts){
     const g = svgEl('g',{class:`node ${node.kind}${state.selected===node.id ? ' selected' : ''}`});
+    g.setAttribute('data-node-id', node.id);
     g.addEventListener('click', evt => {
       evt.stopPropagation();
       state.selected = node.id;
@@ -1979,7 +2288,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         class:'shape'
       }));
       iconX = node.x - size.w/2 + 18;
-      iconY = node.y - 10;
+      iconY = node.y - Math.min(48, size.h / 2 - 18);
     } else {
       g.appendChild(svgEl('circle',{cx:node.x,cy:node.y,r:size.r,class:'shape'}));
     }
@@ -1990,21 +2299,31 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       else g.appendChild(iconGroup('database', iconX, iconY, 24));
     } else if(node.kind === 'tool'){
       g.appendChild(iconGroup(node.icon || 'cpu', iconX, iconY, 20));
-    } else if(node.kind === 'llm' && state.view === 'glean'){
+    } else if(node.kind === 'llm' && opts && opts.isGlean){
       const raster = llmRasterIconUrlForNode(node);
-      if(raster) g.appendChild(svgConnectorRasterIcon(raster, iconX, iconY, 26));
-      else g.appendChild(iconGroup(node.icon || 'cpu', iconX, iconY, 20));
+      if(raster) g.appendChild(svgConnectorRasterIcon(raster, iconX, iconY, 28));
+      else g.appendChild(iconGroup(node.icon || 'cpu', iconX, iconY, 24));
+    } else if(node.kind === 'llm'){
+      g.appendChild(iconGroup(node.icon || 'cpu', iconX, iconY, 24));
     } else {
       g.appendChild(iconGroup(node.icon || 'circle', iconX, iconY, size.rect ? 20 : 24));
     }
 
-    if(size.rect){
+    if(node.kind === 'outputDoc'){
+      appendTextLines(g, wrapLabel(node.label, 14, 2), node.x, node.y - size.h / 2 + 22, 'nodeLabel', 18);
+      const tg = svgEl('g', { id: `${node.id}-typing` });
+      g.appendChild(tg);
+    } else if(size.rect){
       const lw = node.kind === 'sectionHub' ? 12 : 17;
       const lines = wrapLabel(node.label, lw, 3);
       appendTextLines(g, lines, node.x + 12, node.y + (lines.length === 1 ? 6 : -8), 'nodeLabel', 18);
     } else if(node.kind === 'tool'){
       const lines = wrapLabel(node.label, 14, 2);
       appendTextLines(g, lines, node.x, node.y + size.r + 12, 'nodeLabel', 16);
+    } else if(node.kind === 'datasource'){
+      /* title hidden — icon only */
+    } else if(node.kind === 'llm'){
+      /* title hidden — icon only */
     } else if(node.kind === 'user'){
       appendTextLines(g, wrapLabel(node.label, 18, 2), node.x, node.y + 82, 'nodeLabel', 18);
       appendTextLines(g, wrapLabel(node.subtitle || '', 28, 2), node.x, node.y + 112, 'nodeLabelSub', 16);
@@ -2046,15 +2365,20 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(node.parent) meta.push(`Parent datasource: ${nodeById[node.parent] ? nodeById[node.parent].label : node.parent}`);
     fillList(detailMeta, meta.length ? meta : ['No metadata available.']);
 
-    const direct = currentVisibleEdges
-      .filter(e => e.a===node.id || e.b===node.id)
-      .map(e => {
-        const other = nodeById[e.a===node.id ? e.b : e.a];
-        return `${e.type}: ${other ? other.label : (e.a===node.id ? e.b : e.a)}`;
-      });
+    const edgePool = [...visibleEdgesGlean(), ...visibleEdgesCompetitor()];
+    const seen = new Set();
+    const direct = [];
+    edgePool.forEach(e => {
+      if(e.a !== node.id && e.b !== node.id) return;
+      const key = e.a < e.b ? `${e.a}|${e.b}|${e.type}` : `${e.b}|${e.a}|${e.type}`;
+      if(seen.has(key)) return;
+      seen.add(key);
+      const other = nodeById[e.a === node.id ? e.b : e.a];
+      direct.push(`${e.type}: ${other ? other.label : (e.a === node.id ? e.b : e.a)}`);
+    });
 
-    fillList(detailConnections, direct.length ? direct.slice(0,20) : ['No direct connections visible in this view.']);
-    fillList(detailRelated, [...new Set(direct.map(x => x.split(': ')[1]).filter(Boolean))].slice(0,20));
+    fillList(detailConnections, direct.length ? direct.slice(0, 20) : ['No direct connections visible in this view.']);
+    fillList(detailRelated, [...new Set(direct.map(x => x.split(': ')[1]).filter(Boolean))].slice(0, 20));
   }
 
   function syncNodeDetailPopover(){
@@ -2066,296 +2390,304 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     }
   }
 
-  function ensureViewport(){
+  function mergedNodeForDraw(node, posMap){
+    const p = posMap[node.id];
+    if(!p) return node;
+    return Object.assign({}, node, { x: p.x, y: p.y });
+  }
+
+  function ensureViewport(which){
+    const svg = which === 'glean' ? gleanSvg : compSvg;
     clearElement(svg);
-    viewport = svgEl('g');
-    staticGroup = svgEl('g');
-    travelerGroup = svgEl('g');
-    viewport.appendChild(staticGroup);
-    viewport.appendChild(travelerGroup);
+    const viewport = svgEl('g');
+    const staticG = svgEl('g');
+    const travelG = svgEl('g');
+    viewport.appendChild(staticG);
+    viewport.appendChild(travelG);
     svg.appendChild(viewport);
-    applyCamera();
+    if(which === 'glean'){
+      gleanViewport = viewport;
+      gleanStatic = staticG;
+      gleanTravelersG = travelG;
+    } else {
+      compViewport = viewport;
+      compStatic = staticG;
+      compTravelersG = travelG;
+    }
+    applyCamera(which);
   }
 
-  function applyCamera(){
-    if(!viewport) return;
-    viewport.setAttribute('transform', `translate(${state.camera.x} ${state.camera.y}) scale(${state.camera.scale})`);
-    hudCamera.textContent = `${Math.round(state.camera.scale * 100)}% · drag to pan · wheel to zoom`;
+  function applyCamera(which){
+    const vp = which === 'glean' ? gleanViewport : compViewport;
+    const cam = which === 'glean' ? state.cameraGlean : state.cameraComp;
+    if(!vp) return;
+    vp.setAttribute('transform', `translate(${cam.x} ${cam.y}) scale(${cam.scale})`);
   }
 
-  function fitCameraToGraph(){
+  function fitCameraToGraph(which){
+    const svg = which === 'glean' ? gleanSvg : compSvg;
+    const cam = which === 'glean' ? state.cameraGlean : state.cameraComp;
+    const posMap = which === 'glean' ? layoutPos.glean : layoutPos.comp;
+    const nodes = which === 'glean' ? visibleNodesGlean() : visibleNodesComp();
     const rect = svg.getBoundingClientRect();
     if(rect.width < 8 || rect.height < 8) return;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    currentVisibleNodes.forEach(n => {
-      const sz = nodeSize(n);
+    nodes.forEach(n => {
+      const mn = mergedNodeForDraw(n, posMap);
+      const sz = nodeSize(mn);
       const padX = (sz.rect ? sz.w / 2 : sz.r) + 32;
       const padY = (sz.rect ? sz.h / 2 : sz.r) + 52;
-      minX = Math.min(minX, n.x - padX);
-      maxX = Math.max(maxX, n.x + padX);
-      minY = Math.min(minY, n.y - padY);
-      maxY = Math.max(maxY, n.y + padY);
+      minX = Math.min(minX, mn.x - padX);
+      maxX = Math.max(maxX, mn.x + padX);
+      minY = Math.min(minY, mn.y - padY);
+      maxY = Math.max(maxY, mn.y + padY);
     });
     if(!isFinite(minX)){
-      const vbH = state.view === 'glean' ? layoutGeom.viewHeight : 3300;
-      const vbX = state.view === 'glean' ? layoutGeom.viewBoxX : 0;
-      const vbW = state.view === 'glean' ? layoutGeom.viewBoxW : 2000;
-      minX = vbX; maxX = vbX + vbW; minY = 0; maxY = vbH;
+      if(which === 'glean'){
+        minX = 0; maxX = layoutGeom.viewBoxW; minY = 0; maxY = layoutGeom.viewHeight;
+      } else {
+        minX = 0; maxX = 2200; minY = 0; maxY = 1800;
+      }
     } else {
       const pad = 64;
       minX -= pad; maxX += pad; minY -= pad; maxY += pad;
     }
-    if(state.view === 'glean'){
-      state.camera.scale = Math.min(GLEAN_CAMERA_MAX_SCALE, GLEAN_CAMERA_START_SCALE);
-    } else {
-      state.camera.scale = COMPETITOR_CAMERA_START_SCALE;
-    }
+    cam.scale = which === 'glean'
+      ? Math.min(GLEAN_CAMERA_MAX_SCALE, GLEAN_CAMERA_START_SCALE)
+      : COMPETITOR_CAMERA_START_SCALE;
     const cx = (minX + maxX) / 2;
     const cy = (minY + maxY) / 2;
-    let viewCx, viewCy;
-    if(state.view === 'glean'){
-      viewCx = layoutGeom.viewBoxX + layoutGeom.viewBoxW / 2;
-      viewCy = layoutGeom.viewHeight / 2;
-    } else {
-      const vb = svg.viewBox && svg.viewBox.baseVal;
-      viewCx = vb && vb.width > 0 ? vb.x + vb.width / 2 : cx;
-      viewCy = vb && vb.height > 0 ? vb.y + vb.height / 2 : cy;
-    }
-    state.camera.x = viewCx - cx * state.camera.scale;
-    state.camera.y = viewCy - cy * state.camera.scale;
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const viewCx = vb && vb.width > 0 ? vb.x + vb.width / 2 : cx;
+    const viewCy = vb && vb.height > 0 ? vb.y + vb.height / 2 : cy;
+    cam.x = viewCx - cx * cam.scale;
+    cam.y = viewCy - cy * cam.scale;
   }
 
-  function renderStatic(opts = {}){
-    currentVisibleNodes = visibleNodes();
-    layout();
-    currentVisibleEdges = visibleEdges();
+  function fitBothCameras(){
+    fitCameraToGraph('glean');
+    fitCameraToGraph('comp');
+    applyCamera('glean');
+    applyCamera('comp');
+  }
 
-    pageTitle.textContent = data.meta.title || `${data.user.label} Enterprise Knowledge Graph`;
+  function renderOneGraph(which){
+    const posMap = which === 'glean' ? layoutPos.glean : layoutPos.comp;
+    const edges = which === 'glean' ? visibleEdgesGlean() : visibleEdgesCompetitor();
+    const nodes = which === 'glean' ? visibleNodesGlean() : visibleNodesComp();
 
-    hudMode.textContent = `Mode: ${state.view==='glean' ? "Glean's Context" : "Competitor's Context"}`;
-    if(graphDetailWrap){
-      graphDetailWrap.classList.toggle('isHidden', state.view !== 'glean');
-    }
-    if(btnGraphCollapsed && btnGraphExpanded){
-      btnGraphCollapsed.classList.toggle('active', state.graphDetail === 'collapsed');
-      btnGraphExpanded.classList.toggle('active', state.graphDetail === 'expanded');
-    }
-    hudCounts.textContent = `${currentVisibleNodes.length} nodes · ${currentVisibleEdges.length} edges`;
+    ensureViewport(which);
+    const staticG = which === 'glean' ? gleanStatic : compStatic;
 
-    if(state.view === 'glean'){
-      svg.setAttribute('viewBox', `${layoutGeom.viewBoxX} 0 ${layoutGeom.viewBoxW} ${Math.ceil(layoutGeom.viewHeight)}`);
-    } else {
-      let cminX = Infinity, cminY = Infinity, cmaxX = -Infinity, cmaxY = -Infinity;
-      currentVisibleNodes.forEach(n => {
-        const sz = nodeSize(n);
-        const padX = (sz.rect ? sz.w / 2 : sz.r) + 28;
-        const padY = (sz.rect ? sz.h / 2 : sz.r) + 40;
-        cminX = Math.min(cminX, n.x - padX);
-        cmaxX = Math.max(cmaxX, n.x + padX);
-        cminY = Math.min(cminY, n.y - padY);
-        cmaxY = Math.max(cmaxY, n.y + padY);
-      });
-      if(isFinite(cminX)){
-        const vbM = 48;
-        cminX -= vbM; cmaxX += vbM; cminY -= vbM; cmaxY += vbM;
-        svg.setAttribute('viewBox', `${cminX} ${cminY} ${cmaxX - cminX} ${cmaxY - cminY}`);
-      } else {
-        svg.setAttribute('viewBox', '0 0 2000 3300');
+    if(which === 'glean'){
+      staticG.appendChild(drawLayers());
+      if(state.graphDetail !== 'collapsed'){
+        drawSectionLabels(staticG);
       }
-    }
-
-    ensureViewport();
-    clearElement(staticGroup);
-
-    if(state.view==='glean'){
-      staticGroup.appendChild(drawLayers());
-      drawSectionLabels(staticGroup);
-
-      if(data.memories.length){
-        const ringR = state.graphDetail === 'collapsed' ? 148 : 226;
-        staticGroup.appendChild(svgEl('circle',{cx:data.user.x,cy:data.user.y,r:ringR,class:'memoryRing'}));
-        if(data.memories.length){
-          const ringLabel = svgEl('text',{x:data.user.x-110,y:data.user.y-ringR-28,class:'ringLabel'});
-          ringLabel.textContent = 'User Memories';
-          staticGroup.appendChild(ringLabel);
-        }
+      const ux = posFromMap(data.user.id, posMap);
+      if(ux && data.memories.length){
+        const ringR = state.graphDetail === 'collapsed' ? 148 : 200;
+        staticG.appendChild(svgEl('circle',{ cx: ux.x, cy: ux.y, r: ringR, class: 'memoryRing' }));
+        const ringLabel = svgEl('text',{ x: ux.x - 110, y: ux.y - ringR - 28, class: 'ringLabel' });
+        ringLabel.textContent = 'User Memories';
+        staticG.appendChild(ringLabel);
       }
     }
 
     const edgeGroup = svgEl('g');
-    currentVisibleEdges.forEach(edge => {
-      const a = nodeById[edge.a];
-      const b = nodeById[edge.b];
-      if(!a || !b) return;
-      const path = svgEl('path',{d:edgePathForType(edge,a,b),class:`edge ${edge.type}`});
+    edges.forEach(edge => {
+      const a = mergedNodeForDraw(nodeById[edge.a], posMap);
+      const b = mergedNodeForDraw(nodeById[edge.b], posMap);
+      if(!nodeById[edge.a] || !nodeById[edge.b]) return;
+      const path = svgEl('path',{ d: edgePathForType(edge, a, b), class: `edge ${edge.type}` });
       if(edge.type === 'tool') path.setAttribute('class', 'sunRay');
       edgeGroup.appendChild(path);
     });
-    staticGroup.appendChild(edgeGroup);
+    staticG.appendChild(edgeGroup);
 
     const nodeGroup = svgEl('g');
-    currentVisibleNodes.forEach(node => nodeGroup.appendChild(drawNode(node)));
-    staticGroup.appendChild(nodeGroup);
+    nodes.forEach(node => {
+      nodeGroup.appendChild(drawNode(mergedNodeForDraw(node, posMap), { isGlean: which === 'glean' }));
+    });
+    staticG.appendChild(nodeGroup);
+  }
+
+  function updateOutputDocTyping(svgRoot, docId, charCount){
+    const host = svgRoot.querySelector(`[id="${docId}-typing"]`);
+    if(!host) return;
+    clearElement(host);
+    const node = nodeById[docId];
+    if(!node) return;
+    const size = nodeSize(node);
+    const w = size.w - 20;
+    const sub = OUTPUT_DOC_PLACEHOLDER.slice(0, Math.max(0, charCount));
+    const fo = svgEl('foreignObject', {
+      x: node.x - size.w / 2 + 10,
+      y: node.y - size.h / 2 + 38,
+      width: w,
+      height: size.h - 50
+    });
+    const div = document.createElement('div');
+    div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    div.style.fontSize = '11px';
+    div.style.lineHeight = '1.35';
+    div.style.fontFamily = 'inherit';
+    div.style.color = '#000';
+    div.textContent = sub;
+    fo.appendChild(div);
+    host.appendChild(fo);
+  }
+
+  function renderStatic(opts = {}){
+    layoutGlean();
+    visibleNodesGlean().forEach(n => { layoutPos.glean[n.id] = { x: n.x, y: n.y }; });
+    gleanSvg.setAttribute('viewBox', `0 0 ${layoutGeom.viewBoxW} ${Math.ceil(layoutGeom.viewHeight)}`);
+    layoutCompetitor();
+    visibleNodesComp().forEach(n => { layoutPos.comp[n.id] = { x: n.x, y: n.y }; });
+    compSvg.setAttribute('viewBox', '0 0 2200 1800');
+
+    currentVisibleNodes = visibleNodesGlean();
+    currentVisibleEdges = visibleEdgesGlean();
+
+    pageTitle.textContent = data.meta.title || `${data.user.label} Enterprise Knowledge Graph`;
+
+    if(btnGraphCollapsed && btnGraphExpanded){
+      btnGraphCollapsed.classList.toggle('active', state.graphDetail === 'collapsed');
+      btnGraphExpanded.classList.toggle('active', state.graphDetail === 'expanded');
+    }
+
+    renderOneGraph('glean');
+    renderOneGraph('comp');
 
     syncNodeDetailPopover();
 
-    travelerGeomStale = true;
     if(!opts.preserveCamera){
-      fitCameraToGraph();
-      const r0 = svg.getBoundingClientRect();
-      if(r0.width < 8 || r0.height < 8){
-        (function deferFit(attempts){
-          if(attempts <= 0) return;
-          requestAnimationFrame(() => {
-            const r = svg.getBoundingClientRect();
-            if(r.width >= 8 && r.height >= 8){
-              fitCameraToGraph();
-              applyCamera();
-            } else deferFit(attempts - 1);
-          });
-        })(16);
-      }
+      state.animStartMs = performance.now();
+      state.compLifecycleCycle = -1;
+      fitBothCameras();
+      const deferFit = (svgEl, attempts) => {
+        if(attempts <= 0) return;
+        requestAnimationFrame(() => {
+          const r = svgEl.getBoundingClientRect();
+          if(r.width >= 8 && r.height >= 8){
+            fitBothCameras();
+          } else deferFit(svgEl, attempts - 1);
+        });
+      };
+      deferFit(gleanSvg, 16);
     }
     renderTravelers();
-    applyCamera();
   }
 
-  function renderTravelers(){
-    if(!travelerGroup) return;
-    clearElement(travelerGroup);
-
-    if(travelerViewMode !== state.view || travelerGraphDetail !== state.graphDetail){
-      gleanTravelers = null;
-      competitorTravelers = null;
-      travelerViewMode = state.view;
-      travelerGraphDetail = state.graphDetail;
-    }
-
-    if(travelerGeomStale){
-      if(state.view === 'glean' && gleanTravelers){
-        gleanTravelers.forEach(tr => { tr.geom = pathGeomFromIds(tr.pathIds); });
-      } else if(state.view === 'competitor' && competitorTravelers){
-        competitorTravelers.forEach(tr => { tr.geom = pathGeomFromIds(tr.pathIds); });
-      }
-      travelerGeomStale = false;
-    }
-
-    const now = performance.now();
-
-    if(state.view === 'competitor'){
-      if(!competitorTravelers){
-        competitorTravelers = [];
-        for(let i = 0; i < COMPETITOR_TRAVELER_COUNT; i++) competitorTravelers.push(createCompetitorTraveler(now));
-      }
-      competitorTravelers.forEach(tr => {
-        const pos = sampleTravelerMotion(tr, now);
-        travelerGroup.appendChild(svgEl('circle',{
-          cx: pos.x,
-          cy: pos.y,
-          r: 4.8,
-          class: pos.cls
-        }));
-      });
-      return;
-    }
-
-    if(!gleanTravelers){
-      gleanTravelers = [];
-      for(let i = 0; i < GLEAN_TRAVELER_COUNT; i++) gleanTravelers.push(createGleanTraveler(now));
-    }
-
-    gleanTravelers.forEach(tr => {
-      const pos = sampleTravelerMotion(tr, now);
-      travelerGroup.appendChild(svgEl('circle',{
-        cx: pos.x,
-        cy: pos.y,
-        r: 3.5,
-        class: pos.cls
-      }));
+  function updateGleanTravelerVisitGlow(visitedIds){
+    if(!gleanSvg) return;
+    const uid = data.user.id;
+    gleanSvg.querySelectorAll('[data-node-id]').forEach(el => {
+      const id = el.getAttribute('data-node-id');
+      const on = !!(visitedIds && visitedIds.has(id) && id !== uid);
+      el.classList.toggle('travelerVisitHighlight', on);
     });
   }
 
-  function svgPointFromEvent(evt){
+  function renderTravelers(){
+    if(!gleanTravelersG || !compTravelersG) return;
+    const now = performance.now();
+    refreshLifecycleRandomPicks(now);
+    const gVis = gleanLifecycleVisual(now, state.animStartMs, layoutPos.glean);
+    const cVis = competitorLifecycleVisual(now, state.animStartMs, layoutPos.comp, state.compLifecycleTrios);
+
+    updateGleanTravelerVisitGlow(gVis.visitedIds);
+
+    clearElement(gleanTravelersG);
+    gVis.circles.forEach(pos => {
+      gleanTravelersG.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: TRAVELER_R_GLEAN, class: pos.cls }));
+    });
+    clearElement(compTravelersG);
+    cVis.circles.forEach(pos => {
+      compTravelersG.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: TRAVELER_R_COMP, class: pos.cls }));
+    });
+
+    updateOutputDocTyping(gleanSvg, GLEAN_OUTPUT_DOC_ID, gVis.docCharCount);
+    updateOutputDocTyping(compSvg, COMP_OUTPUT_DOC_ID, cVis.docCharCount);
+  }
+
+  function svgPointFromEvent(evt, svg){
     const pt = svg.createSVGPoint();
     pt.x = evt.clientX;
     pt.y = evt.clientY;
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
 
-  svg.addEventListener('pointerdown', evt => {
-    const clickedNode = typeof evt.target.closest === 'function' && evt.target.closest('.node');
-    if(clickedNode) return;
-    state.isPanning = true;
-    stageWrap.classList.add('dragging');
-    state.panStart = {
-      point: svgPointFromEvent(evt),
-      x: state.camera.x,
-      y: state.camera.y
-    };
-    svg.setPointerCapture(evt.pointerId);
-  });
+  function bindSvgInteractions(svg, which){
+    const cam = () => which === 'glean' ? state.cameraGlean : state.cameraComp;
+    const minS = which === 'glean' ? GLEAN_CAMERA_MIN_SCALE : 0.55;
+    const maxS = which === 'glean' ? GLEAN_CAMERA_MAX_SCALE : 2.6;
 
-  svg.addEventListener('pointermove', evt => {
-    if(!state.isPanning || !state.panStart) return;
-    const p = svgPointFromEvent(evt);
-    state.camera.x = state.panStart.x + (p.x - state.panStart.point.x);
-    state.camera.y = state.panStart.y + (p.y - state.panStart.point.y);
-    applyCamera();
-  });
+    svg.addEventListener('pointerdown', evt => {
+      const clickedNode = typeof evt.target.closest === 'function' && evt.target.closest('.node');
+      if(clickedNode) return;
+      state.isPanning = true;
+      state.panSvg = which;
+      stageWrap.classList.add('dragging');
+      state.panStart = {
+        point: svgPointFromEvent(evt, svg),
+        x: cam().x,
+        y: cam().y
+      };
+      svg.setPointerCapture(evt.pointerId);
+    });
 
-  function endPan(evt){
-    state.isPanning = false;
-    state.panStart = null;
-    stageWrap.classList.remove('dragging');
-    if(evt && svg.hasPointerCapture && svg.hasPointerCapture(evt.pointerId)){
-      svg.releasePointerCapture(evt.pointerId);
+    svg.addEventListener('pointermove', evt => {
+      if(!state.isPanning || !state.panStart || state.panSvg !== which) return;
+      const p = svgPointFromEvent(evt, svg);
+      const c = cam();
+      c.x = state.panStart.x + (p.x - state.panStart.point.x);
+      c.y = state.panStart.y + (p.y - state.panStart.point.y);
+      applyCamera(which);
+    });
+
+    function endPan(evt){
+      if(state.panSvg !== which) return;
+      state.isPanning = false;
+      state.panStart = null;
+      state.panSvg = null;
+      stageWrap.classList.remove('dragging');
+      if(evt && svg.hasPointerCapture && svg.hasPointerCapture(evt.pointerId)){
+        svg.releasePointerCapture(evt.pointerId);
+      }
     }
+
+    svg.addEventListener('pointerup', endPan);
+    svg.addEventListener('pointercancel', endPan);
+
+    svg.addEventListener('wheel', evt => {
+      evt.preventDefault();
+      const p = svgPointFromEvent(evt, svg);
+      const c = cam();
+      const worldX = (p.x - c.x) / c.scale;
+      const worldY = (p.y - c.y) / c.scale;
+      const factor = evt.deltaY < 0 ? 1.1 : 0.9;
+      const newScale = Math.max(minS, Math.min(maxS, c.scale * factor));
+      c.x = p.x - worldX * newScale;
+      c.y = p.y - worldY * newScale;
+      c.scale = newScale;
+      applyCamera(which);
+    }, { passive: false });
+
+    svg.addEventListener('click', evt => {
+      const clickedNode = typeof evt.target.closest === 'function' && evt.target.closest('.node');
+      if(clickedNode) return;
+      state.selected = null;
+      renderStatic({ preserveCamera: true });
+    });
   }
 
-  svg.addEventListener('pointerup', endPan);
-  svg.addEventListener('pointercancel', endPan);
-
-  svg.addEventListener('wheel', evt => {
-    evt.preventDefault();
-    const p = svgPointFromEvent(evt);
-    const worldX = (p.x - state.camera.x) / state.camera.scale;
-    const worldY = (p.y - state.camera.y) / state.camera.scale;
-    const factor = evt.deltaY < 0 ? 1.1 : 0.9;
-    const minS = state.view === 'glean' ? GLEAN_CAMERA_MIN_SCALE : 0.55;
-    const maxS = state.view === 'glean' ? GLEAN_CAMERA_MAX_SCALE : 2.6;
-    const newScale = Math.max(minS, Math.min(maxS, state.camera.scale * factor));
-    state.camera.x = p.x - worldX * newScale;
-    state.camera.y = p.y - worldY * newScale;
-    state.camera.scale = newScale;
-    applyCamera();
-  }, {passive:false});
-
-  svg.addEventListener('click', evt => {
-    const clickedNode = typeof evt.target.closest === 'function' && evt.target.closest('.node');
-    if(clickedNode) return;
-    state.selected = null;
-    renderStatic({ preserveCamera: true });
-  });
-
-  btnGlean.addEventListener('click', () => {
-    state.view = 'glean';
-    state.selected = null;
-    btnGlean.classList.add('active');
-    btnCompetitor.classList.remove('active');
-    renderStatic();
-  });
-
-  btnCompetitor.addEventListener('click', () => {
-    state.view = 'competitor';
-    state.selected = null;
-    btnCompetitor.classList.add('active');
-    btnGlean.classList.remove('active');
-    renderStatic();
-  });
+  bindSvgInteractions(gleanSvg, 'glean');
+  bindSvgInteractions(compSvg, 'comp');
 
   if(btnGraphCollapsed){
     btnGraphCollapsed.addEventListener('click', () => {
-      if(state.view !== 'glean' || state.graphDetail === 'collapsed') return;
+      if(state.graphDetail === 'collapsed') return;
       state.graphDetail = 'collapsed';
       state.selected = null;
       renderStatic();
@@ -2363,7 +2695,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   }
   if(btnGraphExpanded){
     btnGraphExpanded.addEventListener('click', () => {
-      if(state.view !== 'glean' || state.graphDetail === 'expanded') return;
+      if(state.graphDetail === 'expanded') return;
       state.graphDetail = 'expanded';
       state.selected = null;
       renderStatic();
