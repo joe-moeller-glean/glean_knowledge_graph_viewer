@@ -4,7 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Enterprise Knowledge Graph Context Engine</title>
-<link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/6127a84dfe068e153ef20572/67189bf127c626679a308b22_32x32%20Glean%20Favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="https://app.glean.com/images/glean-logo2.svg" />
 <style>
   :root{
     --blue:#343CED;
@@ -12,7 +15,8 @@
     --oatmeal:#F6F3EB;
     --black:#000000;
     --white:#FFFFFF;
-    --radius:22px;
+    --blue-light:#6B71F5;
+    --radius:20px;
     --brandMarkImg:url("data:image/png;base64,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");
   }
 
@@ -20,9 +24,11 @@
   html,body{height:100%}
   body{
     margin:0;
-    font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:var(--oatmeal);
-    color:var(--black);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    background:var(--black);
+    color:rgba(255,255,255,.92);
     overflow:hidden;
   }
 
@@ -34,9 +40,35 @@
     grid-template-rows:minmax(0,1fr);
     gap:16px;
     padding:16px;
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(135deg,#1a1e6e,#343ced,#5a3ed8,#7ac455 90%,#d8fd49);
+  }
+
+  .app:before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(circle at 10% 10%,rgba(255,255,255,.04) 0%,transparent 50%),
+      radial-gradient(circle at 90% 90%,rgba(216,253,73,.06) 0%,transparent 28%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .app:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);
+    background-size:32px 32px;
+    pointer-events:none;
+    z-index:0;
   }
 
   .main{
+    position:relative;
+    z-index:1;
     min-width:0;
     min-height:0;
     display:grid;
@@ -45,8 +77,10 @@
   }
 
   .card{
-    background:var(--white);
-    border:1.5px solid var(--black);
+    background:rgba(255,255,255,.06);
+    -webkit-backdrop-filter:blur(20px);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.1);
     border-radius:var(--radius);
   }
 
@@ -87,20 +121,23 @@
   .brandEyebrow{
     margin:0 0 2px;
     font-size:12px;
-    letter-spacing:.12em;
+    font-weight:600;
+    letter-spacing:2px;
     text-transform:uppercase;
+    color:var(--green);
   }
   .brandTitle{
     margin:0;
     font-size:20px;
     line-height:1.05;
     font-weight:800;
+    color:rgba(255,255,255,.96);
   }
   .brandSub{
     margin:4px 0 0;
     font-size:13px;
     line-height:1.35;
-    opacity:.78;
+    color:rgba(255,255,255,.65);
   }
 
   .controls{
@@ -115,8 +152,8 @@
   .segmented{
     display:inline-flex;
     padding:4px;
-    background:var(--oatmeal);
-    border:1.5px solid var(--black);
+    background:rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.12);
     border-radius:999px;
     gap:4px;
   }
@@ -126,7 +163,7 @@
     appearance:none;
     border:none;
     background:transparent;
-    color:var(--black);
+    color:rgba(255,255,255,.88);
     font:inherit;
     cursor:pointer;
   }
@@ -137,6 +174,8 @@
     font-weight:700;
   }
 
+  .segmented button:not(.active):hover{background:rgba(255,255,255,.08)}
+
   .segmented button.active{
     background:var(--blue);
     color:var(--white);
@@ -144,10 +183,15 @@
 
   .ghostBtn{
     padding:10px 12px;
-    border:1.5px solid var(--black);
+    border:1px solid rgba(255,255,255,.12);
     border-radius:12px;
-    background:var(--white);
+    background:rgba(255,255,255,.08);
     font-weight:700;
+  }
+
+  .ghostBtn:hover{
+    background:rgba(255,255,255,.14);
+    border-color:rgba(255,255,255,.22);
   }
 
   .stageWrap{
@@ -168,7 +212,7 @@
     display:flex;
     flex-direction:row;
     gap:0;
-    border-top:1.5px solid var(--black);
+    border-top:1px solid rgba(255,255,255,.1);
   }
 
   .stagePanel{
@@ -181,19 +225,19 @@
   }
 
   .stagePanel + .stagePanel{
-    border-left:1.5px solid var(--black);
+    border-left:1px solid rgba(255,255,255,.1);
   }
 
   .stagePanelLabel{
     flex:0 0 auto;
     padding:8px 12px;
     font-size:11px;
-    font-weight:900;
-    letter-spacing:.1em;
+    font-weight:700;
+    letter-spacing:1.5px;
     text-transform:uppercase;
-    color:var(--blue);
-    background:var(--oatmeal);
-    border-bottom:1.5px solid var(--black);
+    color:var(--green);
+    background:rgba(0,0,0,.28);
+    border-bottom:1px solid rgba(255,255,255,.1);
   }
 
   .stageSvg{
@@ -201,20 +245,20 @@
     flex:1 1 auto;
     min-height:0;
     width:100%;
-    background:var(--white);
+    background:rgba(0,0,0,.2);
     touch-action:none;
   }
 
   .outputDocBody{
     font-size:11px;
     font-weight:500;
-    fill:var(--black);
+    fill:rgba(255,255,255,.92);
     text-anchor:start;
     pointer-events:none;
   }
 
   .outputDocCaret{
-    fill:var(--blue);
+    fill:rgba(255,255,255,.75);
     font-weight:900;
   }
 
@@ -228,7 +272,7 @@
     display:flex;
     flex-direction:column;
     overflow:hidden;
-    box-shadow:8px 12px 0 rgba(0,0,0,.08);
+    box-shadow:0 16px 48px rgba(0,0,0,.35),0 0 0 1px rgba(216,253,73,.15);
     pointer-events:auto;
   }
 
@@ -248,9 +292,10 @@
 
   .nodeDetailClose{
     appearance:none;
-    border:1.5px solid var(--black);
+    border:1px solid rgba(255,255,255,.12);
     border-radius:10px;
-    background:var(--white);
+    background:rgba(255,255,255,.08);
+    color:rgba(255,255,255,.92);
     width:36px;
     height:36px;
     font-size:22px;
@@ -261,6 +306,11 @@
     display:grid;
     place-items:center;
     padding:0;
+  }
+
+  .nodeDetailClose:hover{
+    background:rgba(255,255,255,.14);
+    border-color:rgba(255,255,255,.22);
   }
 
   .nodeDetailBody{
@@ -276,7 +326,7 @@
     font-weight:800;
     letter-spacing:.12em;
     text-transform:uppercase;
-    color:var(--blue);
+    color:var(--green);
   }
 
   .panelTitle{
@@ -284,6 +334,7 @@
     font-size:24px;
     line-height:1.05;
     font-weight:900;
+    color:rgba(255,255,255,.94);
   }
 
   .section{margin-top:18px}
@@ -293,13 +344,14 @@
     text-transform:uppercase;
     letter-spacing:.08em;
     font-weight:900;
-    color:var(--blue);
+    color:var(--green);
   }
 
   .section p,.section li{
     font-size:14px;
     line-height:1.45;
     margin:0;
+    color:rgba(255,255,255,.88);
   }
 
   .section ul{
@@ -309,23 +361,23 @@
 
   .layerBand{
     fill:none;
-    stroke:var(--black);
+    stroke:rgba(255,255,255,.22);
     stroke-width:4;
-    opacity:.5;
+    opacity:.65;
   }
 
   .memoryRing{
     fill:none;
-    stroke:var(--blue);
+    stroke:var(--blue-light);
     stroke-width:2;
     stroke-dasharray:8 10;
-    opacity:.45;
+    opacity:.55;
   }
 
   .bandLabel{
     font-size:20px;
     font-weight:900;
-    fill:var(--blue);
+    fill:var(--green);
     letter-spacing:.06em;
     text-transform:uppercase;
   }
@@ -333,14 +385,13 @@
   .bandSub{
     font-size:16px;
     font-weight:500;
-    fill:var(--black);
-    opacity:.72;
+    fill:rgba(255,255,255,.72);
   }
 
   .ringLabel{
     font-size:14px;
     font-weight:900;
-    fill:var(--blue);
+    fill:var(--green);
     letter-spacing:.08em;
     text-transform:uppercase;
   }
@@ -348,27 +399,27 @@
   .sectionLabel{
     font-size:16px;
     font-weight:900;
-    fill:var(--blue);
+    fill:var(--green);
     letter-spacing:.08em;
     text-transform:uppercase;
   }
 
   .edge{
     fill:none;
-    stroke:var(--blue);
-    opacity:.3;
+    stroke:#c8c8c8;
+    opacity:.55;
     stroke-width:4;
   }
 
-  .edge.memory{opacity:.28}
-  .edge.bridge{opacity:.18;stroke-width:1.2}
-  .edge.tool{opacity:.18}
-  .edge.llm{opacity:.24;stroke-width:1.4}
-  .edge.competitor{opacity:.22;stroke-width:1.5;stroke-dasharray:8 8}
+  .edge.memory{opacity:.45}
+  .edge.bridge{opacity:.32;stroke-width:1.2}
+  .edge.tool{opacity:.32}
+  .edge.llm{opacity:.4;stroke-width:1.4}
+  .edge.competitor{opacity:.38;stroke-width:1.5;stroke-dasharray:8 8}
 
   .node{cursor:pointer}
   .node .shape{
-    stroke:var(--black);
+    stroke:rgba(255,255,255,.35);
     stroke-width:1.6;
     fill:var(--white);
   }
@@ -380,12 +431,13 @@
   .node.llm .shape,
   .node.datasource .shape{fill:var(--white)}
   .node.outputDoc .shape{
-    fill:var(--oatmeal);
+    fill:rgba(0,0,0,.15);
+    stroke:rgba(255,255,255,.22);
     stroke-dasharray:6 4;
   }
 
   .node.selected .shape{
-    stroke:var(--blue);
+    stroke:var(--green);
     stroke-width:3;
   }
 
@@ -394,7 +446,19 @@
   }
 
   #gleanSvg .node.outputDoc.travelerVisitHighlight .shape{
-    fill:var(--oatmeal);
+    fill:rgba(0,0,0,.22);
+  }
+
+  .node.outputDoc .nodeLabel{
+    fill:rgba(255,255,255,.95);
+  }
+
+  .node.outputDoc .iconStroke{
+    stroke:rgba(255,255,255,.92);
+  }
+
+  .node.outputDoc .iconFill{
+    fill:rgba(255,255,255,.92);
   }
 
   .nodeLabel{
@@ -415,7 +479,12 @@
   }
 
   .node.user .nodeLabel,
-  .node.user .nodeLabelSub{fill:var(--black)}
+  .node.user .nodeLabelSub{
+    fill:rgba(255,255,255,.95);
+    opacity:1;
+  }
+
+  .node.user .nodeLabelSub{opacity:.85}
 
   .iconStroke{
     stroke:var(--blue);
@@ -440,19 +509,19 @@
 
   .traveler{
     fill:var(--green);
-    stroke:var(--black);
+    stroke:rgba(0,0,0,.35);
     stroke-width:1;
   }
 
   .llmTraveler{
     fill:var(--blue);
-    stroke:var(--black);
+    stroke:rgba(255,255,255,.45);
     stroke-width:1;
   }
 
   .sunRay{
-    stroke:var(--blue);
-    opacity:.16;
+    stroke:var(--blue-light);
+    opacity:.22;
     stroke-width:1.1;
     fill:none;
   }
@@ -990,7 +1059,6 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       if(tDoc > 0) visited.add(docId);
       return visited;
     }
-
     visited.add(docId);
     return visited;
   }
@@ -1097,6 +1165,17 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return Math.max(1e-6, Math.hypot(b.x - a.x, b.y - a.y));
   }
 
+  /** LLM→answer edges attach here (not node center): Glean top-left, competitor top-right. */
+  function outputDocEdgeAnchor(node, which){
+    const sz = nodeSize(node);
+    if(node.kind !== 'outputDoc') return { x: node.x, y: node.y };
+    const top = node.y - sz.h / 2;
+    if(which === 'glean'){
+      return { x: node.x - sz.w / 2, y: top };
+    }
+    return { x: node.x + sz.w / 2, y: top };
+  }
+
   function gleanLifecycleVisual(now, startMs, posMap){
     const docId = GLEAN_OUTPUT_DOC_ID;
     const elapsed = (now - startMs) / 1000;
@@ -1133,10 +1212,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         if(E < 1) return;
         const segIdx = Math.floor(tRaw / TRAVELER_SEGMENT_SEC);
         const frac = Math.min(1, (tRaw % TRAVELER_SEGMENT_SEC) / TRAVELER_SEGMENT_SEC);
-        if(segIdx >= E){
-          const at = posFromMap(path[E], posMap);
-          if(at) circles.push({ x: at.x, y: at.y, cls: 'traveler' });
-        } else {
+        const onLastHop = segIdx === E - 1;
+        if(segIdx < E && !(onLastHop && frac >= 1)){
           interp(path[segIdx], path[segIdx + 1], frac, 'traveler');
         }
       });
@@ -1147,7 +1224,16 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(tDoc < TRAVELER_SEGMENT_SEC){
       const frac = Math.min(1, tDoc / TRAVELER_SEGMENT_SEC);
       if(frac < 1){
-        interp(plan.targetLlm, docId, frac, 'llmTraveler');
+        const A = posFromMap(plan.targetLlm, posMap);
+        const docNode = mergedNodeForDraw(nodeById[docId], posMap);
+        const B = outputDocEdgeAnchor(docNode, 'glean');
+        if(A){
+          circles.push({
+            x: A.x + (B.x - A.x) * frac,
+            y: A.y + (B.y - A.y) * frac,
+            cls: 'llmTraveler'
+          });
+        }
       }
       return { circles, docCharCount: 0, visitedIds };
     }
@@ -1188,6 +1274,18 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       });
     };
 
+    const interpLlmToAnswer = frac => {
+      const A = posFromMap(llm, posMap);
+      const docNode = mergedNodeForDraw(nodeById[docId], posMap);
+      const B = outputDocEdgeAnchor(docNode, 'comp');
+      if(!A) return;
+      circles.push({
+        x: A.x + (B.x - A.x) * frac,
+        y: A.y + (B.y - A.y) * frac,
+        cls: 'llmTraveler'
+      });
+    };
+
     if(tRaw >= pathDur){
       return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length };
     }
@@ -1202,7 +1300,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       t -= TRAVELER_SEGMENT_SEC;
       if(t < TRAVELER_SEGMENT_SEC){
         const fd = Math.min(1, t / TRAVELER_SEGMENT_SEC);
-        if(fd < 1) interp(llm, docId, fd, 'llmTraveler');
+        if(fd < 1) interpLlmToAnswer(fd);
         return { circles, docCharCount: 0 };
       }
       t -= TRAVELER_SEGMENT_SEC;
@@ -1240,7 +1338,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
     if(t < TRAVELER_SEGMENT_SEC){
       const fd = Math.min(1, t / TRAVELER_SEGMENT_SEC);
-      if(fd < 1) interp(llm, docId, fd, 'llmTraveler');
+      if(fd < 1) interpLlmToAnswer(fd);
       return { circles, docCharCount: 0 };
     }
     t -= TRAVELER_SEGMENT_SEC;
@@ -2287,8 +2385,15 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         rx:14,
         class:'shape'
       }));
-      iconX = node.x - size.w/2 + 18;
-      iconY = node.y - Math.min(48, size.h / 2 - 18);
+      if(node.kind === 'outputDoc'){
+        const ic = 20;
+        const pad = 10;
+        iconX = node.x - size.w / 2 + pad + ic / 2;
+        iconY = node.y - size.h / 2 + pad + ic / 2;
+      } else {
+        iconX = node.x - size.w/2 + 18;
+        iconY = node.y - Math.min(48, size.h / 2 - 18);
+      }
     } else {
       g.appendChild(svgEl('circle',{cx:node.x,cy:node.y,r:size.r,class:'shape'}));
     }
@@ -2310,7 +2415,13 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     }
 
     if(node.kind === 'outputDoc'){
-      appendTextLines(g, wrapLabel(node.label, 14, 2), node.x, node.y - size.h / 2 + 22, 'nodeLabel', 18);
+      const iconPad = 10;
+      const iconColumn = 24;
+      const titleGap = 10;
+      const titleX = node.x - size.w / 2 + iconPad + iconColumn + titleGap;
+      const titleY = node.y - size.h / 2 + 24;
+      const titleText = appendTextLines(g, wrapLabel(node.label, 14, 2), titleX, titleY, 'nodeLabel', 18);
+      titleText.setAttribute('text-anchor', 'start');
       const tg = svgEl('g', { id: `${node.id}-typing` });
       g.appendChild(tg);
     } else if(size.rect){
@@ -2334,18 +2445,25 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return g;
   }
 
-  function edgePath(a,b){
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const cx = a.x + dx / 2;
-    const cy = a.y + dy / 2;
+  function edgePathBezier(p1, p2){
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const cx = p1.x + dx / 2;
+    const cy = p1.y + dy / 2;
     const curve = Math.abs(dx) > 180 ? 20 : 8;
-    return `M ${a.x} ${a.y} Q ${cx} ${cy - curve} ${b.x} ${b.y}`;
+    return `M ${p1.x} ${p1.y} Q ${cx} ${cy - curve} ${p2.x} ${p2.y}`;
   }
 
-  function edgePathForType(edge, a, b){
-    if(edge.type === 'tool') return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
-    return edgePath(a, b);
+  function edgeAnchorPoint(node, which){
+    if(node.kind === 'outputDoc') return outputDocEdgeAnchor(node, which);
+    return { x: node.x, y: node.y };
+  }
+
+  function edgePathForType(edge, a, b, which){
+    const p1 = edgeAnchorPoint(a, which);
+    const p2 = edgeAnchorPoint(b, which);
+    if(edge.type === 'tool') return `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+    return edgePathBezier(p1, p2);
   }
 
   function setNodeDetailPopoverVisible(visible){
@@ -2499,7 +2617,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       const a = mergedNodeForDraw(nodeById[edge.a], posMap);
       const b = mergedNodeForDraw(nodeById[edge.b], posMap);
       if(!nodeById[edge.a] || !nodeById[edge.b]) return;
-      const path = svgEl('path',{ d: edgePathForType(edge, a, b), class: `edge ${edge.type}` });
+      const path = svgEl('path',{ d: edgePathForType(edge, a, b, which), class: `edge ${edge.type}` });
       if(edge.type === 'tool') path.setAttribute('class', 'sunRay');
       edgeGroup.appendChild(path);
     });
@@ -2523,16 +2641,16 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const sub = OUTPUT_DOC_PLACEHOLDER.slice(0, Math.max(0, charCount));
     const fo = svgEl('foreignObject', {
       x: node.x - size.w / 2 + 10,
-      y: node.y - size.h / 2 + 38,
+      y: node.y - size.h / 2 + 42,
       width: w,
-      height: size.h - 50
+      height: size.h - 54
     });
     const div = document.createElement('div');
     div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
     div.style.fontSize = '11px';
     div.style.lineHeight = '1.35';
     div.style.fontFamily = 'inherit';
-    div.style.color = '#000';
+    div.style.color = 'rgba(255,255,255,.92)';
     div.textContent = sub;
     fo.appendChild(div);
     host.appendChild(fo);
