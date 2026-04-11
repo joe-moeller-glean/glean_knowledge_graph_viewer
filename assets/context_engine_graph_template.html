@@ -441,12 +441,32 @@
     stroke-width:3;
   }
 
+  .node.assistantAction.selected .assistantActionFace{
+    stroke:var(--green);
+    stroke-width:3;
+  }
+
   #gleanSvg .node.travelerVisitHighlight .shape{
     fill:var(--green);
   }
 
   #gleanSvg .node.outputDoc.travelerVisitHighlight .shape{
     fill:rgba(0,0,0,.22);
+  }
+
+  .agenticActionChip .iconStroke{
+    stroke:rgba(255,255,255,.88);
+    stroke-width:1.8;
+  }
+  .agenticActionChip .iconFill{
+    fill:rgba(255,255,255,.88);
+  }
+  .agenticActionChipText{
+    font-size:15px;
+    font-weight:800;
+    fill:rgba(255,255,255,.92);
+    text-anchor:start;
+    pointer-events:none;
   }
 
   .node.outputDoc .nodeLabel{
@@ -502,6 +522,23 @@
 
   .node.user .iconStroke{stroke:var(--white)}
   .node.user .iconFill{fill:var(--white)}
+
+  /* Assistant actions: transparent hit area (no fill); white icon strokes */
+  .node.assistantAction .assistantActionFace{
+    fill:rgba(0,0,0,0);
+    stroke:none;
+  }
+  .node.assistantAction .iconStroke{
+    stroke:rgba(255,255,255,.65);
+  }
+  .node.assistantAction .iconFill{
+    fill:rgba(255,255,255,.65);
+  }
+  .node.assistantAction .assistantActionCaption{
+    font-size:13px;
+    font-weight:800;
+    fill:rgba(255,255,255,.65);
+  }
 
   .nodeConnectorIcon{
     pointer-events:none;
@@ -705,6 +742,9 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     "plusplus": "https://cdn.prod.website-files.com/613513981b0efaf850830620/673f2b03cfae378f50d19ab9_PlusPlus.svg",
     "procore": "https://cdn.prod.website-files.com/613513981b0efaf850830620/6937ed76bb78589a2672b0bd_Procore_Logo.png",
     "quip": "https://cdn.prod.website-files.com/613513981b0efaf850830620/6414a4afd3e332dfa92c7054_quip.svg",
+    "salesforce": "https://cdn.simpleicons.org/salesforce",
+    "sigma": "https://cdn.prod.website-files.com/666bbba4ff7240a20f4ccccf/667c50235a7c85e89454d7a8_sigma-favicon.png",
+    "sigma-computing": "https://cdn.prod.website-files.com/666bbba4ff7240a20f4ccccf/667c50235a7c85e89454d7a8_sigma-favicon.png",
     "zendesk": "https://cdn.prod.website-files.com/6127a84dfe068e153ef20572/69295396cc46d1994175604b_a4fde2b67fe257fdb545c87f2db483c1_zendesk.svg",
     "workday": "https://cdn.prod.website-files.com/6127a84dfe068e153ef20572/69295396cac7de195d921a62_6f71123d1182c8d1de36a63d97d11149_Workday.svg",
     "servicenow": "https://cdn.prod.website-files.com/6127a84dfe068e153ef20572/692953950a71b2cba11592a5_2273f96fc59096b92428e40b0fe63bd8_servicenow.svg",
@@ -814,13 +854,16 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     "plusplus": "https://cdn.prod.website-files.com/613513981b0efaf850830620/673f2b03cfae378f50d19ab9_PlusPlus.svg",
     "procore": "https://cdn.prod.website-files.com/613513981b0efaf850830620/6937ed76bb78589a2672b0bd_Procore_Logo.png",
     "quip": "https://cdn.prod.website-files.com/613513981b0efaf850830620/6414a4afd3e332dfa92c7054_quip.svg",
+    "salesforce": "https://cdn.simpleicons.org/salesforce",
+    "sigma": "https://cdn.prod.website-files.com/666bbba4ff7240a20f4ccccf/667c50235a7c85e89454d7a8_sigma-favicon.png",
+    "sigma computing": "https://cdn.prod.website-files.com/666bbba4ff7240a20f4ccccf/667c50235a7c85e89454d7a8_sigma-favicon.png",
     "anthropic": "https://cdn.simpleicons.org/anthropic",
     "openai": "https://cdn.jsdelivr.net/npm/simple-icons@15/icons/openai.svg",
     "gemini": "https://cdn.simpleicons.org/googlegemini"
   }
 };
 </script>
-<script>window.KNOWLEDGE_GRAPH_DATA = {"meta":{"title":"Enterprise Knowledge Graph","subtitle":""},"user":{"id":"user-current","label":"Current User","subtitle":"Role","kind":"user","layer":"user","group":"user","desc":"Profile node for the current user.","icon":"user"},"llms":[{"id":"llm-openai","label":"OpenAI","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-anthropic","label":"Anthropic","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-gemini","label":"Gemini","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"}],"memories":[],"people":[],"teams":[],"departments":[],"projects":[],"meetings":[],"documents":[],"orgNodes":[],"enterpriseDocuments":[],"partners":[],"dataSources":[{"id":"ds-example-crm","label":"Example CRM","subtitle":"Datasource","desc":"Illustrative connector with nested tools.","icon":"database","actions":[{"id":"action-crm-lookup","label":"Lookup record","subtitle":"Tool","desc":"Open a record by id.","icon":"cpu"},{"id":"action-crm-update","label":"Update field","subtitle":"Tool","desc":"Patch fields on a record.","icon":"cpu"},{"id":"action-crm-log","label":"Log call","subtitle":"Tool","desc":"Attach an activity to a timeline.","icon":"cpu"},{"id":"action-crm-report","label":"Run report","subtitle":"Tool","desc":"Execute a saved report.","icon":"cpu"}]},{"id":"ds-example-wiki","label":"Example Wiki","subtitle":"Datasource","desc":"Second illustrative datasource.","icon":"database","tools":[{"id":"action-wiki-search","label":"Search pages","subtitle":"Tool","desc":"Full-text search.","icon":"cpu"},{"id":"action-wiki-edit","label":"Edit page","subtitle":"Tool","desc":"Create or update content.","icon":"cpu"},{"id":"action-wiki-link","label":"Link issue","subtitle":"Tool","desc":"Cross-link to tickets.","icon":"cpu"}]}],"actions":[{"id":"action-cal-list","label":"List calendars","subtitle":"Tool","desc":"Surface owned and shared calendars.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-create","label":"Create event","subtitle":"Tool","desc":"Add events with attendees and rooms.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-availability","label":"Find availability","subtitle":"Tool","desc":"Match free slots across attendees.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-meet","label":"Attach Meet link","subtitle":"Tool","desc":"Add video conferencing to invites.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-sync","label":"Sync rooms","subtitle":"Tool","desc":"Keep room resources up to date.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-drive-search","label":"Search files","subtitle":"Tool","desc":"Find docs by name, owner, or type.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-folder","label":"Open folder","subtitle":"Tool","desc":"Jump to shared drives and folders.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-share","label":"Share doc","subtitle":"Tool","desc":"Grant view or edit access.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-comment","label":"Add comment","subtitle":"Tool","desc":"Annotate files for review.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-version","label":"Version history","subtitle":"Tool","desc":"Compare and restore revisions.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-shortcut","label":"Create shortcut","subtitle":"Tool","desc":"Link files across locations.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-gmail-search","label":"Search mail","subtitle":"Tool","desc":"Query threads with operators.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-draft","label":"Draft reply","subtitle":"Tool","desc":"Compose with suggested tone.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-label","label":"Label thread","subtitle":"Tool","desc":"Organize with labels and filters.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-schedule","label":"Schedule send","subtitle":"Tool","desc":"Queue messages for later.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-attach","label":"Attach from Drive","subtitle":"Tool","desc":"Insert Drive files into mail.","parent":"ds-gmail","icon":"cpu"},{"id":"action-slack-post","label":"Post message","subtitle":"Tool","desc":"Send to channels or DMs.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-search","label":"Search channels","subtitle":"Tool","desc":"Find messages and files.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-canvas","label":"Create canvas","subtitle":"Tool","desc":"Structured docs inside Slack.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-react","label":"Add reaction","subtitle":"Tool","desc":"Emoji signals on threads.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-remind","label":"Set reminder","subtitle":"Tool","desc":"Snooze follow-ups.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-huddle","label":"Start huddle","subtitle":"Tool","desc":"Quick audio in channel.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-workflow","label":"Run workflow","subtitle":"Tool","desc":"Trigger automation shortcuts.","parent":"ds-slack","icon":"cpu"},{"id":"action-jira-create","label":"Create issue","subtitle":"Tool","desc":"File bugs and stories.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-transition","label":"Transition","subtitle":"Tool","desc":"Move work across columns.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-comment","label":"Add comment","subtitle":"Tool","desc":"Threaded ticket updates.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-confluence","label":"Link Confluence","subtitle":"Tool","desc":"Attach specs to issues.","parent":"ds-jira","icon":"cpu"},{"id":"action-gong-search","label":"Search calls","subtitle":"Tool","desc":"Find meetings by topic or rep.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-transcript","label":"Pull transcript","subtitle":"Tool","desc":"Read full conversation text.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-clip","label":"Clip moment","subtitle":"Tool","desc":"Share highlights externally.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-scorecard","label":"Scorecard view","subtitle":"Tool","desc":"Review coaching rubrics.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-snippet","label":"Share snippet","subtitle":"Tool","desc":"Export audio or text clips.","parent":"ds-gong","icon":"cpu"},{"id":"action-sf-account","label":"Lookup account","subtitle":"Tool","desc":"Open account timeline.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-opp","label":"Update opportunity","subtitle":"Tool","desc":"Change stage and amount.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-activity","label":"Log activity","subtitle":"Tool","desc":"Capture calls and tasks.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-task","label":"Create task","subtitle":"Tool","desc":"Assign follow-ups.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-pipeline","label":"Pipeline view","subtitle":"Tool","desc":"Filter forecast columns.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-einstein","label":"Einstein insight","subtitle":"Tool","desc":"Surface next-best actions.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sigma-workbook","label":"Run workbook","subtitle":"Tool","desc":"Refresh embedded models.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-export","label":"Export chart","subtitle":"Tool","desc":"CSV or image export.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-schedule","label":"Schedule export","subtitle":"Tool","desc":"Recurring report drops.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-embed","label":"Embed link","subtitle":"Tool","desc":"Share live charts securely.","parent":"ds-sigma","icon":"cpu"},{"id":"action-gh-search","label":"Search code","subtitle":"Tool","desc":"Repo-wide symbol search.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-pr","label":"Open PR","subtitle":"Tool","desc":"Review diffs and checks.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-issue","label":"Create issue","subtitle":"Tool","desc":"File bugs from chat.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-actions","label":"View Actions","subtitle":"Tool","desc":"CI run status and logs.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-workflow","label":"Trigger workflow","subtitle":"Tool","desc":"dispatch events.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-readme","label":"Read README","subtitle":"Tool","desc":"Surface repo overview.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-blame","label":"Blame view","subtitle":"Tool","desc":"Trace line ownership.","parent":"ds-github","icon":"cpu"},{"id":"action-glean-search","label":"Company search","subtitle":"Tool","desc":"Unified enterprise retrieval.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-chat","label":"Chat","subtitle":"Tool","desc":"Grounded assistant responses.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-agent","label":"Agent run","subtitle":"Tool","desc":"Multi-step workflows.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-skill","label":"Skill invoke","subtitle":"Tool","desc":"Declarative automations.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-saved","label":"Saved search","subtitle":"Tool","desc":"Monitor query alerts.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-people","label":"People lookup","subtitle":"Tool","desc":"Profiles and org context.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-docqa","label":"Doc Q&A","subtitle":"Tool","desc":"Deep read on linked sources.","parent":"ds-glean-platform","icon":"cpu"}],"opportunities":[],"accounts":[],"edges":[]};</script>
+<script>window.KNOWLEDGE_GRAPH_DATA = {"meta":{"title":"Enterprise Knowledge Graph","subtitle":""},"user":{"id":"user-current","label":"Current User","subtitle":"Role","kind":"user","layer":"user","group":"user","desc":"Profile node for the current user.","icon":"user"},"llms":[{"id":"llm-openai","label":"OpenAI","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-anthropic","label":"Anthropic","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-gemini","label":"Gemini","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"}],"assistantActions":[{"id":"aa-search","label":"Search","subtitle":"Capability","desc":"Unified enterprise search across indexed content (Glean Search).","icon":"search","caption":"Search"},{"id":"aa-create","label":"Create","subtitle":"Capability","desc":"Create records, drafts, and content via Actions and connectors.","icon":"plus-circle","caption":"Create"},{"id":"aa-plan","label":"Think","subtitle":"Capability","desc":"Multi-step reasoning and planning before taking action.","icon":"sparkles","caption":"Think"},{"id":"aa-code","label":"Run code","subtitle":"Capability","desc":"Execute code or scripts in supported environments.","icon":"terminal","caption":"Code"},{"id":"aa-image","label":"Generate image","subtitle":"Capability","desc":"Generate or edit images when models and policies allow.","icon":"image","caption":"Image"},{"id":"aa-browser","label":"Browser","subtitle":"Capability","desc":"Navigate and operate web applications where supported.","icon":"globe","caption":"Browse"},{"id":"aa-mcp","label":"MCP","subtitle":"Capability","desc":"Invoke MCP tools and connector-backed Actions from Assistant and Agents.","icon":"plug","caption":"MCP"}],"memories":[],"people":[],"teams":[],"departments":[],"projects":[],"meetings":[],"documents":[],"orgNodes":[],"enterpriseDocuments":[],"partners":[],"dataSources":[{"id":"ds-example-crm","label":"Example CRM","subtitle":"Datasource","desc":"Illustrative connector with nested tools.","icon":"database","actions":[{"id":"action-crm-lookup","label":"Lookup record","subtitle":"Tool","desc":"Open a record by id.","icon":"cpu"},{"id":"action-crm-update","label":"Update field","subtitle":"Tool","desc":"Patch fields on a record.","icon":"cpu"},{"id":"action-crm-log","label":"Log call","subtitle":"Tool","desc":"Attach an activity to a timeline.","icon":"cpu"},{"id":"action-crm-report","label":"Run report","subtitle":"Tool","desc":"Execute a saved report.","icon":"cpu"}]},{"id":"ds-example-wiki","label":"Example Wiki","subtitle":"Datasource","desc":"Second illustrative datasource.","icon":"database","tools":[{"id":"action-wiki-search","label":"Search pages","subtitle":"Tool","desc":"Full-text search.","icon":"cpu"},{"id":"action-wiki-edit","label":"Edit page","subtitle":"Tool","desc":"Create or update content.","icon":"cpu"},{"id":"action-wiki-link","label":"Link issue","subtitle":"Tool","desc":"Cross-link to tickets.","icon":"cpu"}]}],"actions":[{"id":"action-cal-list","label":"List calendars","subtitle":"Tool","desc":"Surface owned and shared calendars.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-create","label":"Create event","subtitle":"Tool","desc":"Add events with attendees and rooms.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-availability","label":"Find availability","subtitle":"Tool","desc":"Match free slots across attendees.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-meet","label":"Attach Meet link","subtitle":"Tool","desc":"Add video conferencing to invites.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-sync","label":"Sync rooms","subtitle":"Tool","desc":"Keep room resources up to date.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-drive-search","label":"Search files","subtitle":"Tool","desc":"Find docs by name, owner, or type.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-folder","label":"Open folder","subtitle":"Tool","desc":"Jump to shared drives and folders.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-share","label":"Share doc","subtitle":"Tool","desc":"Grant view or edit access.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-comment","label":"Add comment","subtitle":"Tool","desc":"Annotate files for review.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-version","label":"Version history","subtitle":"Tool","desc":"Compare and restore revisions.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-shortcut","label":"Create shortcut","subtitle":"Tool","desc":"Link files across locations.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-gmail-search","label":"Search mail","subtitle":"Tool","desc":"Query threads with operators.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-draft","label":"Draft reply","subtitle":"Tool","desc":"Compose with suggested tone.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-label","label":"Label thread","subtitle":"Tool","desc":"Organize with labels and filters.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-schedule","label":"Schedule send","subtitle":"Tool","desc":"Queue messages for later.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-attach","label":"Attach from Drive","subtitle":"Tool","desc":"Insert Drive files into mail.","parent":"ds-gmail","icon":"cpu"},{"id":"action-slack-post","label":"Post message","subtitle":"Tool","desc":"Send to channels or DMs.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-search","label":"Search channels","subtitle":"Tool","desc":"Find messages and files.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-canvas","label":"Create canvas","subtitle":"Tool","desc":"Structured docs inside Slack.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-react","label":"Add reaction","subtitle":"Tool","desc":"Emoji signals on threads.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-remind","label":"Set reminder","subtitle":"Tool","desc":"Snooze follow-ups.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-huddle","label":"Start huddle","subtitle":"Tool","desc":"Quick audio in channel.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-workflow","label":"Run workflow","subtitle":"Tool","desc":"Trigger automation shortcuts.","parent":"ds-slack","icon":"cpu"},{"id":"action-jira-create","label":"Create issue","subtitle":"Tool","desc":"File bugs and stories.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-transition","label":"Transition","subtitle":"Tool","desc":"Move work across columns.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-comment","label":"Add comment","subtitle":"Tool","desc":"Threaded ticket updates.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-confluence","label":"Link Confluence","subtitle":"Tool","desc":"Attach specs to issues.","parent":"ds-jira","icon":"cpu"},{"id":"action-gong-search","label":"Search calls","subtitle":"Tool","desc":"Find meetings by topic or rep.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-transcript","label":"Pull transcript","subtitle":"Tool","desc":"Read full conversation text.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-clip","label":"Clip moment","subtitle":"Tool","desc":"Share highlights externally.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-scorecard","label":"Scorecard view","subtitle":"Tool","desc":"Review coaching rubrics.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-snippet","label":"Share snippet","subtitle":"Tool","desc":"Export audio or text clips.","parent":"ds-gong","icon":"cpu"},{"id":"action-sf-account","label":"Lookup account","subtitle":"Tool","desc":"Open account timeline.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-opp","label":"Update opportunity","subtitle":"Tool","desc":"Change stage and amount.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-activity","label":"Log activity","subtitle":"Tool","desc":"Capture calls and tasks.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-task","label":"Create task","subtitle":"Tool","desc":"Assign follow-ups.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-pipeline","label":"Pipeline view","subtitle":"Tool","desc":"Filter forecast columns.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-einstein","label":"Einstein insight","subtitle":"Tool","desc":"Surface next-best actions.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sigma-workbook","label":"Run workbook","subtitle":"Tool","desc":"Refresh embedded models.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-export","label":"Export chart","subtitle":"Tool","desc":"CSV or image export.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-schedule","label":"Schedule export","subtitle":"Tool","desc":"Recurring report drops.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-embed","label":"Embed link","subtitle":"Tool","desc":"Share live charts securely.","parent":"ds-sigma","icon":"cpu"},{"id":"action-gh-search","label":"Search code","subtitle":"Tool","desc":"Repo-wide symbol search.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-pr","label":"Open PR","subtitle":"Tool","desc":"Review diffs and checks.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-issue","label":"Create issue","subtitle":"Tool","desc":"File bugs from chat.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-actions","label":"View Actions","subtitle":"Tool","desc":"CI run status and logs.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-workflow","label":"Trigger workflow","subtitle":"Tool","desc":"dispatch events.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-readme","label":"Read README","subtitle":"Tool","desc":"Surface repo overview.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-blame","label":"Blame view","subtitle":"Tool","desc":"Trace line ownership.","parent":"ds-github","icon":"cpu"},{"id":"action-glean-search","label":"Company search","subtitle":"Tool","desc":"Unified enterprise retrieval.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-chat","label":"Chat","subtitle":"Tool","desc":"Grounded assistant responses.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-agent","label":"Agent run","subtitle":"Tool","desc":"Multi-step workflows.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-skill","label":"Skill invoke","subtitle":"Tool","desc":"Declarative automations.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-saved","label":"Saved search","subtitle":"Tool","desc":"Monitor query alerts.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-people","label":"People lookup","subtitle":"Tool","desc":"Profiles and org context.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-docqa","label":"Doc Q&A","subtitle":"Tool","desc":"Deep read on linked sources.","parent":"ds-glean-platform","icon":"cpu"}],"opportunities":[],"accounts":[],"edges":[]};</script>
 <script>
 (function(){
   const TEMPLATE_GRAPH_DATA = window.KNOWLEDGE_GRAPH_DATA || {
@@ -843,6 +886,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       {id:"llm-anthropic",label:"Anthropic",kind:"llm",layer:"llm",group:"llm",desc:"LLM provider",icon:"cpu"},
       {id:"llm-gemini",label:"Gemini",kind:"llm",layer:"llm",group:"llm",desc:"LLM provider",icon:"cpu"}
     ],
+    assistantActions:[],
     memories:[],
     people:[],
     teams:[],
@@ -917,8 +961,21 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   let gleanViewport, gleanStatic, gleanTravelersG;
   let compViewport, compStatic, compTravelersG;
 
-  /** Wall-clock seconds to animate each traveler along one edge between nodes. */
-  const TRAVELER_SEGMENT_SEC = 1.5;
+  /** Constant speed along edges (SVG units / second). 450 = prior 360 × 1.25. */
+  const TRAVELER_SPEED_UNITS_PER_SEC = 450;
+  /** Competitor traveler dots use the prior Glean rate (360 u/s) so the right panel stays slower. */
+  const COMPETITOR_TRAVELER_SPEED_UNITS_PER_SEC = 360;
+  /** Per agentic action: float up + fade (cycle); last action is always Create. */
+  const AGENTIC_ACTION_ANIM_SEC = 1.1;
+  const AGENTIC_OVERLAY_ICON_PX = 20;
+  const AGENTIC_OVERLAY_ICON_GAP = 8;
+  const ASSISTANT_CREATE_ACTION_ID = 'aa-create';
+  /** Competitor-only overlay chip for the initial `Think` step (not a graph node). */
+  const COMP_AGENTIC_THINK_ID = 'comp-agentic-think';
+  /** Assistant action ids omitted from competitor LLM animation picks (Glean may still use them). */
+  const COMPETITOR_EXCLUDED_ASSISTANT_ACTION_IDS = new Set(['aa-image']);
+  /** Fallback edge length when positions are missing (for duration estimates). */
+  const TRAVELER_REF_EDGE_UNITS = 240;
   /** Pause after a full path (travel + typing) before the next randomized run. */
   const CYCLE_GAP_SEC = 0.5;
   const TYPING_CHARS_PER_SEC = 42;
@@ -985,12 +1042,28 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     );
   }
 
-  function gleanPathDurationFromPlan(plan){
+  function gleanPathDurationFromPlan(plan, posMap){
     if(!plan || !plan.travelers || !plan.travelers.length){
-      return TRAVELER_SEGMENT_SEC + TRAVELER_SEGMENT_SEC + OUTPUT_DOC_TYPING_SEC;
+      return 2 * (TRAVELER_REF_EDGE_UNITS / TRAVELER_SPEED_UNITS_PER_SEC)
+        + gleanLlmToDocDuration({ targetLlm: (data.llms && data.llms[0] && data.llms[0].id) || 'llm-openai' }, posMap)
+        + OUTPUT_DOC_TYPING_SEC;
     }
-    const maxE = Math.max(...plan.travelers.map(tr => Math.max(0, tr.pathToLlm.length - 1)), 1);
-    return maxE * TRAVELER_SEGMENT_SEC + TRAVELER_SEGMENT_SEC + OUTPUT_DOC_TYPING_SEC;
+    return gleanTimingFromPlan(plan, posMap).pathDur;
+  }
+
+  /** Random 2–6 agentic steps ending with Create; non-Create steps may repeat; deterministic per `rand`. */
+  function planAgenticActions(rand){
+    const ids = (data.assistantActions || []).map(a => a.id).filter(Boolean);
+    if(!ids.includes(ASSISTANT_CREATE_ACTION_ID)) return [];
+    const pool = ids.filter(id => id !== ASSISTANT_CREATE_ACTION_ID);
+    if(!pool.length) return [ASSISTANT_CREATE_ACTION_ID];
+    const total = 2 + Math.floor(rand() * 5);
+    const needOther = total - 1;
+    const prefix = [];
+    for(let i = 0; i < needOther; i++){
+      prefix.push(pool[Math.floor(rand() * pool.length)]);
+    }
+    return prefix.concat([ASSISTANT_CREATE_ACTION_ID]);
   }
 
   /**
@@ -1008,7 +1081,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(!pool.length){
       return {
         targetLlm,
-        travelers: [{ pathToLlm: [uid, targetLlm] }]
+        travelers: [{ pathToLlm: [uid, targetLlm] }],
+        agenticActions: planAgenticActions(rand)
       };
     }
 
@@ -1028,38 +1102,42 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       path.push(targetLlm);
       travelers.push({ pathToLlm: path });
     }
-    return { targetLlm, travelers };
+    return { targetLlm, travelers, agenticActions: planAgenticActions(rand) };
   }
 
-  function gleanLocalTimeInCycle(elapsed){
+  function gleanLocalTimeInCycle(elapsed, posMap){
     let t = 0;
     for(let idx = 0; ; idx++){
       const plan = generateGleanTravelPlan(idx);
-      const dur = gleanPathDurationFromPlan(plan) + CYCLE_GAP_SEC;
+      const dur = gleanPathDurationFromPlan(plan, posMap) + CYCLE_GAP_SEC;
       if(elapsed < t + dur){
-        return { tRaw: elapsed - t, plan, pathDur: gleanPathDurationFromPlan(plan) };
+        return { tRaw: elapsed - t, plan, pathDur: gleanPathDurationFromPlan(plan, posMap) };
       }
       t += dur;
     }
   }
 
-  function computeGleanVisitedNodeIds(tRaw, plan, pathDur){
+  function computeGleanVisitedNodeIds(tRaw, plan, posMap){
     const docId = GLEAN_OUTPUT_DOC_ID;
     const visited = new Set();
-    if(tRaw >= pathDur || !plan || !plan.travelers || !plan.travelers.length){
-      return visited;
-    }
-    const maxE = Math.max(...plan.travelers.map(tr => Math.max(1, tr.pathToLlm.length - 1)), 1);
-    const toLlmDur = maxE * TRAVELER_SEGMENT_SEC;
+    if(!plan || !plan.travelers || !plan.travelers.length) return visited;
+    const { toLlmDur, preCreateAgenticDur, llmDocDur, pathDur } = gleanTimingFromPlan(plan, posMap);
+    if(tRaw >= pathDur) return visited;
 
     if(tRaw < toLlmDur){
-      const segIdx = Math.floor(tRaw / TRAVELER_SEGMENT_SEC);
       plan.travelers.forEach(tr => {
         const path = tr.pathToLlm;
-        const E = path.length - 1;
-        for(let i = 0; i <= Math.min(segIdx, E); i++){
-          visited.add(path[i]);
+        const durs = travelerSegmentDurations(path, posMap);
+        const cum = cumSegTimes(durs);
+        if(durs.length === 0) return;
+        const pathEnd = cum[cum.length - 1];
+        if(tRaw >= pathEnd){
+          path.forEach(id => visited.add(id));
+          return;
         }
+        const { segIdx } = segIndexAndFracAtT(tRaw, cum, durs);
+        const upTo = Math.min(segIdx, path.length - 1);
+        for(let i = 0; i <= upTo; i++) visited.add(path[i]);
       });
       return visited;
     }
@@ -1068,30 +1146,37 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       tr.pathToLlm.forEach(id => visited.add(id));
     });
 
-    const tDoc = tRaw - toLlmDur;
-    if(tDoc < TRAVELER_SEGMENT_SEC){
-      if(tDoc > 0) visited.add(docId);
+    if(tRaw < toLlmDur + preCreateAgenticDur) return visited;
+
+    const tDoc = tRaw - toLlmDur - preCreateAgenticDur;
+    if(tDoc < llmDocDur){
+      if(tDoc >= 0) visited.add(docId);
       return visited;
     }
     visited.add(docId);
     return visited;
   }
 
-  function compCycleTiming(){
-    const travelDur = (data.dataSources || []).length < 1
-      ? 2 * TRAVELER_SEGMENT_SEC
-      : 8 * TRAVELER_SEGMENT_SEC;
-    const pathDur = travelDur + OUTPUT_DOC_TYPING_SEC;
-    return { pathDur, cycleLen: pathDur + CYCLE_GAP_SEC };
+  function compLocalTimeInCycle(elapsed, posMap){
+    let t = 0;
+    for(let cIdx = 0; ; cIdx++){
+      const trios = competitorRoundTrios(cIdx);
+      const travelDur = competitorTravelSumDur(posMap, trios, cIdx);
+      const pathDur = travelDur + OUTPUT_DOC_TYPING_SEC;
+      const cycleLen = pathDur + CYCLE_GAP_SEC;
+      if(elapsed < t + cycleLen){
+        return { tRaw: elapsed - t, cIdx, trios, travelDur, pathDur };
+      }
+      t += cycleLen;
+    }
   }
 
   function refreshLifecycleRandomPicks(now){
     const elapsed = (now - state.animStartMs) / 1000;
-    const c = compCycleTiming();
-    const cIdx = Math.floor(elapsed / c.cycleLen);
+    const { cIdx } = compLocalTimeInCycle(elapsed, layoutPos.comp);
     if(state.compLifecycleCycle !== cIdx){
       state.compLifecycleCycle = cIdx;
-      state.compLifecycleTrios = competitorRoundTrios();
+      state.compLifecycleTrios = competitorRoundTrios(cIdx);
     }
   }
 
@@ -1103,6 +1188,10 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   /** LLM nodes match datasource nodes: circle + icon only (same radius). */
   const LLM_NODE_R = 34;
   const LLM_NODE_GAP_X = 10;
+  const ASSISTANT_NODE_GAP_EXTRA = 5;
+  /** Assistant actions: icon scaled between default vector size (24) and prior 48px; bounds layout + hit area. */
+  const ASSISTANT_ACTION_ICON_PX = 36;
+  const ASSISTANT_ACTION_NODE_R = Math.ceil(ASSISTANT_ACTION_ICON_PX / 2) + 8;
 
   const COLLAPSE_HUB_ORDER = [
     'hub-pers-people','hub-pers-teams','hub-pers-projects','hub-pers-meetings','hub-pers-documents',
@@ -1190,12 +1279,215 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return { x: node.x + sz.w / 2, y: top };
   }
 
+  function cumSegTimes(durs){
+    const cum = [0];
+    for(let i = 0; i < durs.length; i++){
+      cum.push(cum[cum.length - 1] + durs[i]);
+    }
+    return cum;
+  }
+
+  function segIndexAndFracAtT(t, cum, durs){
+    if(durs.length === 0) return { segIdx: 0, linearFrac: 0 };
+    if(t <= 0) return { segIdx: 0, linearFrac: 0 };
+    const total = cum[cum.length - 1];
+    if(t >= total) return { segIdx: durs.length - 1, linearFrac: 1 };
+    for(let i = 0; i < durs.length; i++){
+      if(t < cum[i + 1]){
+        const denom = Math.max(1e-9, durs[i]);
+        const linearFrac = Math.min(1, Math.max(0, (t - cum[i]) / denom));
+        return { segIdx: i, linearFrac };
+      }
+    }
+    return { segIdx: durs.length - 1, linearFrac: 1 };
+  }
+
+  function travelerSegmentDurations(path, posMap){
+    const V = TRAVELER_SPEED_UNITS_PER_SEC;
+    const out = [];
+    for(let i = 0; i < path.length - 1; i++){
+      out.push(Math.max(1e-9, distSeg(path[i], path[i + 1], posMap) / V));
+    }
+    return out;
+  }
+
+  function gleanLlmToDocDuration(plan, posMap){
+    const docId = GLEAN_OUTPUT_DOC_ID;
+    const A = posFromMap(plan.targetLlm, posMap);
+    const docNode = nodeById[docId];
+    if(!A || !docNode) return TRAVELER_REF_EDGE_UNITS / TRAVELER_SPEED_UNITS_PER_SEC;
+    const B = outputDocEdgeAnchor(mergedNodeForDraw(docNode, posMap), 'glean');
+    return Math.max(1e-6, Math.hypot(B.x - A.x, B.y - A.y)) / TRAVELER_SPEED_UNITS_PER_SEC;
+  }
+
+  function gleanTimingFromPlan(plan, posMap){
+    let maxToLlm = 0;
+    plan.travelers.forEach(tr => {
+      const durs = travelerSegmentDurations(tr.pathToLlm, posMap);
+      maxToLlm = Math.max(maxToLlm, durs.reduce((a, b) => a + b, 0));
+    });
+    const llmDocDur = gleanLlmToDocDuration(plan, posMap);
+    const agentic = plan.agenticActions || [];
+    const preCreateAgenticDur = Math.max(0, agentic.length - 1) * AGENTIC_ACTION_ANIM_SEC;
+    const pathDur = maxToLlm + preCreateAgenticDur + llmDocDur + OUTPUT_DOC_TYPING_SEC;
+    return {
+      toLlmDur: maxToLlm,
+      preCreateAgenticDur,
+      llmDocDur,
+      pathDur
+    };
+  }
+
+  function competitorLlmToDocDur(posMap){
+    const V = COMPETITOR_TRAVELER_SPEED_UNITS_PER_SEC;
+    const llm = 'comp-llm';
+    const docId = COMP_OUTPUT_DOC_ID;
+    const A = posFromMap(llm, posMap);
+    const docNode = nodeById[docId];
+    if(!A || !docNode) return TRAVELER_REF_EDGE_UNITS / V;
+    const B = outputDocEdgeAnchor(mergedNodeForDraw(docNode, posMap), 'comp');
+    return Math.max(1e-6, Math.hypot(B.x - A.x, B.y - A.y)) / V;
+  }
+
+  /** Random 2–5 assistant actions (non-Create) per batch; final batch ends with Create when present in data. */
+  function planCompetitorAgentics(cycleIdx){
+    const rand = mulberry32((cycleIdx + 1) * 0x5F356e9B);
+    const ids = (data.assistantActions || []).map(a => a.id).filter(Boolean);
+    const pool = ids.filter(id => id !== ASSISTANT_CREATE_ACTION_ID && !COMPETITOR_EXCLUDED_ASSISTANT_ACTION_IDS.has(id));
+    const hasCreate = ids.includes(ASSISTANT_CREATE_ACTION_ID);
+    const pickBatch = count => {
+      if(count <= 0 || !pool.length) return [];
+      const out = [];
+      for(let i = 0; i < count; i++) out.push(pool[Math.floor(rand() * pool.length)]);
+      return out;
+    };
+    const randLen = () => 2 + Math.floor(rand() * 4);
+    const batch1 = pickBatch(randLen());
+    const batch2 = pickBatch(randLen());
+    const len3 = randLen();
+    const preN = Math.max(0, len3 - 1);
+    const prefixFinal = pickBatch(preN);
+    const finalBatch = hasCreate ? prefixFinal.concat([ASSISTANT_CREATE_ACTION_ID]) : prefixFinal.slice();
+    return { batch1, batch2, finalBatch, hasCreate };
+  }
+
+  function competitorPhaseDur(p, posMap){
+    if(p.type === 'compAgentic'){
+      return (p.ids && p.ids.length ? p.ids.length : 0) * AGENTIC_ACTION_ANIM_SEC;
+    }
+    if(p.type === 'llmToDoc') return competitorLlmToDocDur(posMap);
+    return p.dur;
+  }
+
+  function competitorPhases(posMap, trios, cycleIdx){
+    const V = COMPETITOR_TRAVELER_SPEED_UNITS_PER_SEC;
+    const uid = data.user.id;
+    const llm = 'comp-llm';
+    const dsIds = (data.dataSources || []).map(d => d.id);
+    const ap = planCompetitorAgentics(cycleIdx);
+    const phases = [];
+    const segDur = (a, b) => distSeg(a, b, posMap) / V;
+
+    phases.push({
+      type: 'interp',
+      a: uid,
+      b: llm,
+      cls: 'traveler',
+      dur: segDur(uid, llm)
+    });
+    phases.push({ type: 'compAgentic', ids: [COMP_AGENTIC_THINK_ID] });
+
+    if(!dsIds.length){
+      if(ap.batch1.length) phases.push({ type: 'compAgentic', ids: ap.batch1 });
+      if(ap.batch2.length) phases.push({ type: 'compAgentic', ids: ap.batch2 });
+      const fb = ap.finalBatch;
+      const pre = ap.hasCreate && fb.length && fb[fb.length - 1] === ASSISTANT_CREATE_ACTION_ID
+        ? fb.slice(0, -1)
+        : fb.slice();
+      if(pre.length) phases.push({ type: 'compAgentic', ids: pre });
+      phases.push({ type: 'llmToDoc', withCreateOverlay: ap.hasCreate && fb.includes(ASSISTANT_CREATE_ACTION_ID) });
+      return phases;
+    }
+
+    for(let r = 0; r < 2; r++){
+      const trio = trios[r] || [];
+      const ids3 = trio.filter(Boolean);
+      const llmToDs = ids3.length ? Math.max(...ids3.map(id => segDur(llm, id))) : 0;
+      const dsToLlm = ids3.length ? Math.max(...ids3.map(id => segDur(id, llm))) : 0;
+      phases.push({ type: 'parallelLlmToDs', trio, dur: Math.max(llmToDs, 1e-9) });
+      phases.push({ type: 'parallelDsToLlm', trio, dur: Math.max(dsToLlm, 1e-9) });
+      const batch = r === 0 ? ap.batch1 : ap.batch2;
+      if(batch.length) phases.push({ type: 'compAgentic', ids: batch });
+    }
+
+    const trioLast = trios[2] || [];
+    const idsLast = trioLast.filter(Boolean);
+    const llmToDsLast = idsLast.length ? Math.max(...idsLast.map(id => segDur(llm, id))) : 0;
+    const dsToLlmLast = idsLast.length ? Math.max(...idsLast.map(id => segDur(id, llm))) : 0;
+    phases.push({ type: 'parallelLlmToDs', trio: trioLast, dur: Math.max(llmToDsLast, 1e-9) });
+    phases.push({ type: 'parallelDsToLlm', trio: trioLast, dur: Math.max(dsToLlmLast, 1e-9) });
+
+    const fb = ap.finalBatch;
+    const preFinal = ap.hasCreate && fb.length && fb[fb.length - 1] === ASSISTANT_CREATE_ACTION_ID
+      ? fb.slice(0, -1)
+      : fb.slice();
+    if(preFinal.length) phases.push({ type: 'compAgentic', ids: preFinal });
+    phases.push({ type: 'llmToDoc', withCreateOverlay: ap.hasCreate && fb.includes(ASSISTANT_CREATE_ACTION_ID) });
+    return phases;
+  }
+
+  function competitorTravelSumDur(posMap, trios, cycleIdx){
+    const phases = competitorPhases(posMap, trios, cycleIdx);
+    let s = 0;
+    phases.forEach(p => {
+      s += competitorPhaseDur(p, posMap);
+    });
+    return s;
+  }
+
+  function agenticFloatLabel(actionId){
+    const n = nodeById[actionId];
+    if(!n) return '';
+    const c = String(n.caption || n.label || '').trim();
+    return c.split(/\s+/)[0] || '';
+  }
+
+  /** Single agentic step: float upward from above LLM; linear opacity triangle (no easing). */
+  function gleanAgenticOverlayForSlot(actionId, fracInSlot, targetLlmId, posMap){
+    const L = posFromMap(targetLlmId, posMap);
+    if(!L) return null;
+    const n = nodeById[actionId];
+    const lab = agenticFloatLabel(actionId);
+    if(!lab) return null;
+    const iconName = (n && n.icon) || 'search';
+    const f = Math.min(1, Math.max(0, fracInSlot));
+    const opacity = f <= 0.5 ? 2 * f : 2 * (1 - f);
+    const yBase = L.y - LLM_NODE_R - 8;
+    const rise = 51 * f;
+    const iconSize = AGENTIC_OVERLAY_ICON_PX;
+    const gap = AGENTIC_OVERLAY_ICON_GAP;
+    const textEst = Math.min(lab.length * 7.8, 140);
+    const chipW = iconSize + gap + textEst;
+    const iconCx = L.x - chipW / 2 + iconSize / 2;
+    const iconCy = yBase - rise;
+    return {
+      label: lab,
+      icon: iconName,
+      opacity,
+      iconCx,
+      iconCy,
+      iconSize,
+      gap
+    };
+  }
+
   function gleanLifecycleVisual(now, startMs, posMap){
     const docId = GLEAN_OUTPUT_DOC_ID;
     const elapsed = (now - startMs) / 1000;
-    const { tRaw, plan, pathDur } = gleanLocalTimeInCycle(elapsed);
-    const visitedIds = computeGleanVisitedNodeIds(tRaw, plan, pathDur);
+    const { tRaw, plan, pathDur } = gleanLocalTimeInCycle(elapsed, posMap);
+    const visitedIds = computeGleanVisitedNodeIds(tRaw, plan, posMap);
     const circles = [];
+    const agenticOverlays = [];
 
     const interp = (aId, bId, frac, cls) => {
       const A = posFromMap(aId, posMap);
@@ -1209,73 +1501,93 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     };
 
     if(tRaw >= pathDur){
-      return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length, visitedIds: new Set() };
+      return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length, visitedIds: new Set(), agenticOverlays: [] };
     }
 
     if(!plan || !plan.travelers || !plan.travelers.length){
-      return { circles, docCharCount: 0, visitedIds };
+      return { circles, docCharCount: 0, visitedIds, agenticOverlays: [] };
     }
 
-    const maxE = Math.max(...plan.travelers.map(tr => Math.max(1, tr.pathToLlm.length - 1)), 1);
-    const toLlmDur = maxE * TRAVELER_SEGMENT_SEC;
+    const { toLlmDur, preCreateAgenticDur, llmDocDur } = gleanTimingFromPlan(plan, posMap);
+    const agentic = plan.agenticActions || [];
 
     if(tRaw < toLlmDur){
       plan.travelers.forEach(tr => {
         const path = tr.pathToLlm;
         const E = path.length - 1;
         if(E < 1) return;
-        const segIdx = Math.floor(tRaw / TRAVELER_SEGMENT_SEC);
-        const frac = Math.min(1, (tRaw % TRAVELER_SEGMENT_SEC) / TRAVELER_SEGMENT_SEC);
-        const onLastHop = segIdx === E - 1;
-        if(segIdx < E && !(onLastHop && frac >= 1)){
-          interp(path[segIdx], path[segIdx + 1], frac, 'traveler');
-        }
+        const durs = travelerSegmentDurations(path, posMap);
+        const cum = cumSegTimes(durs);
+        const tot = cum[cum.length - 1];
+        if(tRaw >= tot) return;
+        const { segIdx, linearFrac } = segIndexAndFracAtT(tRaw, cum, durs);
+        interp(path[segIdx], path[segIdx + 1], linearFrac, 'traveler');
       });
-      return { circles, docCharCount: 0, visitedIds };
+      return { circles, docCharCount: 0, visitedIds, agenticOverlays: [] };
     }
 
-    const tDoc = tRaw - toLlmDur;
-    if(tDoc < TRAVELER_SEGMENT_SEC){
-      const frac = Math.min(1, tDoc / TRAVELER_SEGMENT_SEC);
-      if(frac < 1){
+    const tPostLlm = tRaw - toLlmDur;
+    if(tPostLlm < preCreateAgenticDur && agentic.length > 1){
+      const slot = Math.min(
+        Math.floor(tPostLlm / AGENTIC_ACTION_ANIM_SEC),
+        agentic.length - 2
+      );
+      const fracInSlot = (tPostLlm - slot * AGENTIC_ACTION_ANIM_SEC) / AGENTIC_ACTION_ANIM_SEC;
+      const aid = agentic[slot];
+      const ov = gleanAgenticOverlayForSlot(aid, fracInSlot, plan.targetLlm, posMap);
+      if(ov) agenticOverlays.push(ov);
+      return { circles, docCharCount: 0, visitedIds, agenticOverlays };
+    }
+
+    const tCreatePhase = tPostLlm - preCreateAgenticDur;
+    if(tCreatePhase < llmDocDur){
+      const linearFrac = Math.min(1, tCreatePhase / llmDocDur);
+      if(linearFrac < 1){
         const A = posFromMap(plan.targetLlm, posMap);
         const docNode = mergedNodeForDraw(nodeById[docId], posMap);
         const B = outputDocEdgeAnchor(docNode, 'glean');
         if(A){
           circles.push({
-            x: A.x + (B.x - A.x) * frac,
-            y: A.y + (B.y - A.y) * frac,
+            x: A.x + (B.x - A.x) * linearFrac,
+            y: A.y + (B.y - A.y) * linearFrac,
             cls: 'llmTraveler'
           });
         }
       }
-      return { circles, docCharCount: 0, visitedIds };
+      if(agentic.includes(ASSISTANT_CREATE_ACTION_ID)){
+        const fracCreate = Math.min(1, tCreatePhase / AGENTIC_ACTION_ANIM_SEC);
+        const ov = gleanAgenticOverlayForSlot(ASSISTANT_CREATE_ACTION_ID, fracCreate, plan.targetLlm, posMap);
+        if(ov) agenticOverlays.push(ov);
+      }
+      return { circles, docCharCount: 0, visitedIds, agenticOverlays };
     }
 
-    const tType = tDoc - TRAVELER_SEGMENT_SEC;
+    const tType = tCreatePhase - llmDocDur;
     const docCharCount = Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(tType * TYPING_CHARS_PER_SEC));
-    return { circles, docCharCount, visitedIds };
+    return { circles, docCharCount, visitedIds, agenticOverlays: [] };
   }
 
-  function competitorRoundTrios(){
+  function competitorRoundTrios(cycleIdx){
     const ids = (data.dataSources || []).map(d => d.id);
+    if(!ids.length) return [[], [], []];
+    const rand = mulberry32((cycleIdx + 1) * 0x2C3E5F7B);
     const out = [];
     for(let r = 0; r < 3; r++){
-      const t = shufflePathIds(ids.slice());
+      const t = shuffleWithRand(ids.slice(), rand);
       out.push([t[0], t[1 % Math.max(1, t.length)], t[2 % Math.max(1, t.length)]].filter(Boolean));
     }
     return out;
   }
 
-  function competitorLifecycleVisual(now, startMs, posMap, trios){
+  function competitorLifecycleVisual(now, startMs, posMap){
     const uid = data.user.id;
     const llm = 'comp-llm';
     const docId = COMP_OUTPUT_DOC_ID;
-    const { pathDur, cycleLen } = compCycleTiming();
     const elapsed = (now - startMs) / 1000;
-    const tRaw = elapsed - Math.floor(elapsed / cycleLen) * cycleLen;
+    const { tRaw, cIdx, trios, travelDur, pathDur } = compLocalTimeInCycle(elapsed, posMap);
+    const phases = competitorPhases(posMap, trios, cIdx);
     const circles = [];
-    const dsIds = (data.dataSources || []).map(d => d.id);
+    const agenticOverlays = [];
 
     const interp = (aId, bId, frac, cls) => {
       const A = posFromMap(aId, posMap);
@@ -1301,64 +1613,56 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     };
 
     if(tRaw >= pathDur){
-      return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length };
+      return { circles, docCharCount: OUTPUT_DOC_PLACEHOLDER.length, agenticOverlays: [] };
     }
 
-    let t = tRaw;
-
-    if(!dsIds.length){
-      if(t < TRAVELER_SEGMENT_SEC){
-        interp(uid, llm, Math.min(1, t / TRAVELER_SEGMENT_SEC), 'traveler');
-        return { circles, docCharCount: 0 };
-      }
-      t -= TRAVELER_SEGMENT_SEC;
-      if(t < TRAVELER_SEGMENT_SEC){
-        const fd = Math.min(1, t / TRAVELER_SEGMENT_SEC);
-        if(fd < 1) interpLlmToAnswer(fd);
-        return { circles, docCharCount: 0 };
-      }
-      t -= TRAVELER_SEGMENT_SEC;
-      return { circles, docCharCount: Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(t * TYPING_CHARS_PER_SEC)) };
-    }
-
-    const triosStable = trios && trios.length ? trios : competitorRoundTrios();
-
-    if(t < TRAVELER_SEGMENT_SEC){
-      interp(uid, llm, Math.min(1, t / TRAVELER_SEGMENT_SEC), 'traveler');
-      return { circles, docCharCount: 0 };
-    }
-    t -= TRAVELER_SEGMENT_SEC;
-
-    for(let r = 0; r < 3; r++){
-      const trio = triosStable[r] || [];
-      if(t < TRAVELER_SEGMENT_SEC){
-        const frac = Math.min(1, t / TRAVELER_SEGMENT_SEC);
-        for(let i = 0; i < 3; i++){
-          if(trio[i]) interp(llm, trio[i], frac, 'llmTraveler');
+    if(tRaw < travelDur){
+      let t = tRaw;
+      for(let pi = 0; pi < phases.length; pi++){
+        const p = phases[pi];
+        const pdur = competitorPhaseDur(p, posMap);
+        if(pdur <= 0){
+          continue;
         }
-        return { circles, docCharCount: 0 };
-      }
-      t -= TRAVELER_SEGMENT_SEC;
-
-      if(t < TRAVELER_SEGMENT_SEC){
-        const frac = Math.min(1, t / TRAVELER_SEGMENT_SEC);
-        for(let i = 0; i < 3; i++){
-          if(trio[i]) interp(trio[i], llm, frac, 'traveler');
+        if(t >= pdur){
+          t -= pdur;
+          continue;
         }
-        return { circles, docCharCount: 0 };
+        const linearFrac = Math.min(1, t / pdur);
+        if(p.type === 'interp') interp(p.a, p.b, linearFrac, p.cls);
+        else if(p.type === 'parallelLlmToDs'){
+          for(let i = 0; i < 3; i++){
+            if(p.trio[i]) interp(llm, p.trio[i], linearFrac, 'llmTraveler');
+          }
+        }else if(p.type === 'parallelDsToLlm'){
+          for(let i = 0; i < 3; i++){
+            if(p.trio[i]) interp(p.trio[i], llm, linearFrac, 'traveler');
+          }
+        }else if(p.type === 'compAgentic'){
+          const slot = Math.min(
+            Math.floor(t / AGENTIC_ACTION_ANIM_SEC),
+            p.ids.length - 1
+          );
+          const fracInSlot = (t - slot * AGENTIC_ACTION_ANIM_SEC) / AGENTIC_ACTION_ANIM_SEC;
+          const aid = p.ids[slot];
+          const ov = gleanAgenticOverlayForSlot(aid, fracInSlot, llm, posMap);
+          if(ov) agenticOverlays.push(ov);
+        }else if(p.type === 'llmToDoc'){
+          if(p.withCreateOverlay){
+            const fracCreate = Math.min(1, t / AGENTIC_ACTION_ANIM_SEC);
+            const ov = gleanAgenticOverlayForSlot(ASSISTANT_CREATE_ACTION_ID, fracCreate, llm, posMap);
+            if(ov) agenticOverlays.push(ov);
+          }
+          if(linearFrac < 1) interpLlmToAnswer(linearFrac);
+        }
+        return { circles, docCharCount: 0, agenticOverlays };
       }
-      t -= TRAVELER_SEGMENT_SEC;
+      return { circles, docCharCount: 0, agenticOverlays: [] };
     }
 
-    if(t < TRAVELER_SEGMENT_SEC){
-      const fd = Math.min(1, t / TRAVELER_SEGMENT_SEC);
-      if(fd < 1) interpLlmToAnswer(fd);
-      return { circles, docCharCount: 0 };
-    }
-    t -= TRAVELER_SEGMENT_SEC;
-
-    const docCharCount = Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(t * TYPING_CHARS_PER_SEC));
-    return { circles, docCharCount };
+    const tType = tRaw - travelDur;
+    const docCharCount = Math.min(OUTPUT_DOC_PLACEHOLDER.length, Math.floor(tType * TYPING_CHARS_PER_SEC));
+    return { circles, docCharCount, agenticOverlays: [] };
   }
 
   function normalizeData(raw){
@@ -1381,6 +1685,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       enterpriseDocuments: raw.enterpriseDocuments || [],
       partners: raw.partners || [],
       dataSources: raw.dataSources || [],
+      assistantActions: raw.assistantActions || [],
       actions: raw.actions || [],
       opportunities: raw.opportunities || [],
       accounts: raw.accounts || [],
@@ -1421,6 +1726,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     }, normalized.user);
 
     normalized.llms = annotate(normalized.llms, {kind:'llm',layer:'llm',group:'llm',icon:'cpu'});
+    normalized.assistantActions = annotate(normalized.assistantActions, {kind:'assistantAction',layer:'assistant',group:'assistantAction',icon:'search'});
     normalized.memories = annotate(normalized.memories, {kind:'memory',layer:'user',group:'memory',icon:'database'});
     normalized.people = annotate(normalized.people, {kind:'person',layer:'personal',group:'people',icon:'user'});
     normalized.teams = annotate(normalized.teams, {kind:'team',layer:'personal',group:'workteam',icon:'users'});
@@ -1476,6 +1782,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   function rebuildNodes(){
     allNodes = [
       data.user,
+      ...data.assistantActions,
       ...data.llms,
       ...data.memories,
       ...data.people,
@@ -1492,9 +1799,24 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       ...data.dataSources
     ];
     allNodes.forEach(node => { nodeById[node.id] = node; });
+    ensureCompetitorOverlayNodes();
     ensureSectionHubNodes();
     ensureOutputDocNodes();
     allNodes.push(nodeById[GLEAN_OUTPUT_DOC_ID], nodeById[COMP_OUTPUT_DOC_ID]);
+  }
+
+  function ensureCompetitorOverlayNodes(){
+    if(!nodeById[COMP_AGENTIC_THINK_ID]){
+      nodeById[COMP_AGENTIC_THINK_ID] = {
+        id: COMP_AGENTIC_THINK_ID,
+        label: 'Think',
+        caption: 'Think',
+        icon: 'cpu',
+        kind: 'tool',
+        layer: 'comp',
+        group: 'compOverlay'
+      };
+    }
   }
 
   function gleanCollapsedNodesList(){
@@ -1573,7 +1895,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   function visibleNodesGlean(){
     if(state.graphDetail === 'collapsed') return gleanCollapsedNodesList();
     ensureOutputDocNodes();
-    const base = allNodes.filter(n => n.id !== COMP_OUTPUT_DOC_ID);
+    const base = allNodes.filter(n => n.id !== COMP_OUTPUT_DOC_ID && n.kind !== 'assistantAction');
     if(!base.some(n => n.id === GLEAN_OUTPUT_DOC_ID)) base.push(nodeById[GLEAN_OUTPUT_DOC_ID]);
     return base;
   }
@@ -1765,6 +2087,12 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return (na && na.kind === 'datasource') || (nb && nb.kind === 'datasource');
   }
 
+  function edgeTouchesAssistantAction(edge){
+    const na = nodeById[edge.a];
+    const nb = nodeById[edge.b];
+    return (na && na.kind === 'assistantAction') || (nb && nb.kind === 'assistantAction');
+  }
+
   function expandedGleanDenseEdges(){
     const edges = [];
     const pers = personalKnowledgeNodeIds();
@@ -1803,7 +2131,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       type: edge.type || edge.kind || 'bridge'
     })).filter(edge => nodeById[edge.a] && nodeById[edge.b]).filter(e => !isUserLlmEdge(e)).filter(e => !edgeTouchesDatasource(e));
     const dense = expandedGleanDenseEdges();
-    return dedupeUndirectedEdges(base.concat(dense).concat(toolSunRayEdgesGlean()));
+    return dedupeUndirectedEdges(base.concat(dense).concat(toolSunRayEdgesGlean()))
+      .filter(e => !edgeTouchesAssistantAction(e));
   }
 
   function visibleEdgesCompetitor(){
@@ -1834,15 +2163,16 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     gridAssign(list, mid - span / 2, mid + span / 2, y0, stepY, cols);
   }
 
-  function llmAssignFixedGap(list, x0, x1, y, edgePad){
+  function llmAssignFixedGap(list, x0, x1, y, edgePad, nodeR, gapPx){
     const n = list.length;
     if(!n) return;
     const pad = edgePad != null ? edgePad : 36;
     const lo = x0 + pad;
     const hi = x1 - pad;
     const mid = (lo + hi) / 2;
-    const w = 2 * LLM_NODE_R;
-    const g = LLM_NODE_GAP_X;
+    const R = nodeR != null ? nodeR : LLM_NODE_R;
+    const w = 2 * R;
+    const g = gapPx != null ? gapPx : LLM_NODE_GAP_X;
     if(n === 1){
       list[0].x = mid;
       list[0].y = y;
@@ -1997,15 +2327,19 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       const summaryLayerW = 0.38;
       const SUMMARY_EDGE_PAD = 15;
       const ROW_STACK_GAP = 15;
-      let y = 40;
+      const SECTION_LLM_TO_PERSONAL_PAD = 28;
+      let y = 22;
       const personalHubIds = ['hub-pers-people','hub-pers-teams','hub-pers-projects','hub-pers-meetings','hub-pers-documents'];
       const enterpriseHubIds = COLLAPSE_HUB_ENTERPRISE_NO_DS.slice();
 
       const b2pre = pyramidBounds(2, summaryLayerW);
+      const bandTextX = b2pre.x0 + 34;
+      layoutGeom.bandTexts.push({ x: bandTextX, y: y - 6, text: 'Assistant capabilities', cls: 'bandLabel' });
+      layoutGeom.bandTexts.push({ x: bandTextX, y: y + 10, text: 'Search, chat, connector Actions, skills, agents, and tools', cls: 'bandSub' });
       const hLlmBand = 56 + ROW_LLM + 24;
       const llmY = y + 56 + ROW_LLM / 2;
       llmAssignFixedGap(data.llms, b2pre.x0 + 24, b2pre.x1 - 24, llmY, 15);
-      y += hLlmBand + LAYER_GAP;
+      y += hLlmBand + LAYER_GAP + SECTION_LLM_TO_PERSONAL_PAD;
 
       const h2 = 56 + SEC_GRID_TOP + ROW_RECT + ROW_STACK_GAP + ROW_RECT + 44;
       const L2 = registerLayer(2, y, h2, 'Personal Knowledge Graph', 'People, teams, projects, meetings, and active docs', summaryLayerW);
@@ -2098,12 +2432,15 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       return;
     }
 
-    let y = 40;
+    const SECTION_LLM_TO_PERSONAL_PAD = 28;
+    let y = 22;
     const b2preExp = pyramidBounds(2);
+    layoutGeom.bandTexts.push({ x: b2preExp.x0 + 34, y: y - 6, text: 'Assistant capabilities', cls: 'bandLabel' });
+    layoutGeom.bandTexts.push({ x: b2preExp.x0 + 34, y: y + 10, text: 'Search, chat, connector Actions, skills, agents, and tools', cls: 'bandSub' });
     const hLlmBandExp = 56 + ROW_LLM + 24;
     const llmYExp = y + 56 + ROW_LLM / 2;
-    llmAssignFixedGap(data.llms, b2preExp.x0 + 40, b2preExp.x1 - 40, llmYExp);
-    y += hLlmBandExp + LAYER_GAP;
+    llmAssignFixedGap(data.llms, b2preExp.x0 + 40, b2preExp.x1 - 40, llmYExp, 15);
+    y += hLlmBandExp + LAYER_GAP + SECTION_LLM_TO_PERSONAL_PAD;
 
     const personalSections = [
       { list: data.people, label: 'People' },
@@ -2329,7 +2666,9 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
   function iconGroup(name,x,y,size){
     const g = svgEl('g');
-    g.setAttribute('transform', `translate(${x-size/2},${y-size/2})`);
+    const s = size != null ? size : 24;
+    const sc = s / 24;
+    g.setAttribute('transform', `translate(${x},${y}) scale(${sc}) translate(-12,-12)`);
     const cls = 'iconStroke';
     const fillCls = 'iconFill';
     const path = (d, fill=false) => g.appendChild(svgEl('path',{d,class:fill?fillCls:cls}));
@@ -2373,6 +2712,12 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       case 'gong': path('M12 4a8 8 0 1 0 8 8'); path('M12 8a4 4 0 1 0 4 4'); break;
       case 'salesforce': circle(9,12,4); circle(14,10,4); circle(16.5,13.5,3.2); break;
       case 'glean': circle(9,12,4); line(13,12,18,12); line(16,12,19,15); path('M6 16c1.2 1.5 3 2.4 5.2 2.4 1.8 0 3.3-.5 4.6-1.5'); break;
+      case 'trash-2': path('M3 6h18'); path('M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2'); line(10,11,10,17); line(14,11,14,17); path('M5 6l2 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l2-14'); break;
+      case 'sparkles': path('M12 3v4'); path('M12 17v4'); path('M4.2 4.2l2.8 2.8'); path('M17 17l2.8 2.8'); path('M3 12h4'); path('M17 12h4'); path('M4.2 19.8l2.8-2.8'); path('M17 7l2.8-2.8'); circle(12,12,2.5,true); break;
+      case 'terminal': rect(3,5,18,14,2); poly('7 10 9 12 7 14'); line(11,14,17,14); break;
+      case 'image': rect(3,5,18,14,2); circle(8,10,2); poly('8 16 12 12 16 16'); break;
+      case 'globe': circle(12,12,9); ellipsePath(g,12,12,9,4,cls); line(3,12,21,12); line(12,3,12,21); break;
+      case 'plug': path('M12 22v-5'); path('M9 8V2'); path('M15 8V2'); path('M9 8a3 3 0 0 0 6 0'); rect(8,13,8,6,1); break;
       default: circle(12,12,7);
     }
     return g;
@@ -2408,6 +2753,13 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       return kept;
     }
     return lines;
+  }
+
+  /** Single-word caption under assistant actions (first token only). */
+  function assistantCaptionLines(str){
+    const safe = clampLabel(str).replace(/\s+/g,' ').trim();
+    if(!safe) return [''];
+    return [safe.split(/\s+/)[0]];
   }
 
   function appendTextLines(group, lines, x, y, className, lineHeight){
@@ -2453,6 +2805,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(node.kind==='user') return {r:56};
     if(node.kind==='memory') return {r:28};
     if(node.kind==='sectionHub') return {w:200,h:74,rect:true};
+    if(node.kind==='assistantAction') return {r: ASSISTANT_ACTION_NODE_R};
     if(node.kind==='llm') return {r: LLM_NODE_R};
     if(node.kind==='datasource') return {r:34};
     if(node.kind==='tool') return {r:TOOL_NODE_R};
@@ -2497,6 +2850,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
         iconX = node.x - size.w/2 + 18;
         iconY = node.y - Math.min(48, size.h / 2 - 18);
       }
+    } else if(node.kind === 'assistantAction'){
+      g.appendChild(svgEl('circle',{cx:node.x,cy:node.y,r:size.r,class:'assistantActionFace'}));
     } else {
       g.appendChild(svgEl('circle',{cx:node.x,cy:node.y,r:size.r,class:'shape'}));
     }
@@ -2507,6 +2862,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       else g.appendChild(iconGroup('database', iconX, iconY, 24));
     } else if(node.kind === 'tool'){
       g.appendChild(iconGroup(node.icon || 'cpu', iconX, iconY, 20));
+    } else if(node.kind === 'assistantAction'){
+      g.appendChild(iconGroup(node.icon || 'search', iconX, iconY, ASSISTANT_ACTION_ICON_PX));
     } else if(node.kind === 'llm' && opts && opts.isGlean){
       const raster = llmRasterIconUrlForNode(node);
       if(raster) g.appendChild(svgConnectorRasterIcon(raster, iconX, iconY, 28));
@@ -2519,9 +2876,9 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
     if(node.kind === 'outputDoc'){
       const iconPad = 10;
-      const iconColumn = 24;
-      const titleGap = 10;
-      const titleX = node.x - size.w / 2 + iconPad + iconColumn + titleGap;
+      const docIconW = 20;
+      const labelGap = 10;
+      const titleX = node.x - size.w / 2 + iconPad + docIconW + labelGap + 35;
       const titleY = node.y - size.h / 2 + 24;
       const titleText = appendTextLines(g, wrapLabel(node.label, 14, 2), titleX, titleY, 'nodeLabel', 18);
       titleText.setAttribute('text-anchor', 'start');
@@ -2536,6 +2893,10 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       appendTextLines(g, lines, node.x, node.y + size.r + 12, 'nodeLabel', 16);
     } else if(node.kind === 'datasource'){
       /* title hidden — icon only */
+    } else if(node.kind === 'assistantAction'){
+      const cap = node.caption || node.label;
+      const capLines = assistantCaptionLines(cap);
+      appendTextLines(g, capLines, node.x, node.y + size.r + 14, 'nodeLabel assistantActionCaption', 15);
     } else if(node.kind === 'llm'){
       /* title hidden — icon only */
     } else if(node.kind === 'user'){
@@ -2869,12 +3230,11 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       if(!p) return;
       const age = now - pill.startMs;
       const t = Math.min(1, Math.max(0, age / INDEX_PILL_DURATION_MS));
-      const ease = t * t * (3 - 2 * t);
       const ox = pill.spawnOffsetX != null ? pill.spawnOffsetX : 0;
       const yStart = p.y - DS_NODE_R_FOR_PILLS;
       const yEnd = band.y + band.h - 14;
       const x = p.x + ox;
-      const y = yStart + (yEnd - yStart) * ease;
+      const y = yStart + (yEnd - yStart) * t;
       let op = 1;
       if(t > 0.64) op = Math.max(0, 1 - (t - 0.64) / 0.36);
       const gg = svgEl('g', { opacity: String(op) });
@@ -2896,7 +3256,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const now = performance.now();
     refreshLifecycleRandomPicks(now);
     const gVis = gleanLifecycleVisual(now, state.animStartMs, layoutPos.glean);
-    const cVis = competitorLifecycleVisual(now, state.animStartMs, layoutPos.comp, state.compLifecycleTrios);
+    const cVis = competitorLifecycleVisual(now, state.animStartMs, layoutPos.comp);
 
     updateGleanTravelerVisitGlow(gVis.visitedIds);
 
@@ -2905,9 +3265,35 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       gleanTravelersG.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: TRAVELER_R_GLEAN, class: pos.cls }));
     });
     updateAndDrawIndexPills(now, layoutPos.glean);
+    (gVis.agenticOverlays || []).forEach(ov => {
+      const chip = svgEl('g', { class: 'agenticActionChip', opacity: String(ov.opacity) });
+      chip.appendChild(iconGroup(ov.icon, ov.iconCx, ov.iconCy, ov.iconSize));
+      const te = svgEl('text', {
+        x: ov.iconCx + ov.iconSize / 2 + ov.gap,
+        y: ov.iconCy,
+        class: 'agenticActionChipText'
+      });
+      te.setAttribute('dominant-baseline', 'middle');
+      te.textContent = ov.label;
+      chip.appendChild(te);
+      gleanTravelersG.appendChild(chip);
+    });
     clearElement(compTravelersG);
     cVis.circles.forEach(pos => {
       compTravelersG.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: TRAVELER_R_COMP, class: pos.cls }));
+    });
+    (cVis.agenticOverlays || []).forEach(ov => {
+      const chip = svgEl('g', { class: 'agenticActionChip', opacity: String(ov.opacity) });
+      chip.appendChild(iconGroup(ov.icon, ov.iconCx, ov.iconCy, ov.iconSize));
+      const te = svgEl('text', {
+        x: ov.iconCx + ov.iconSize / 2 + ov.gap,
+        y: ov.iconCy,
+        class: 'agenticActionChipText'
+      });
+      te.setAttribute('dominant-baseline', 'middle');
+      te.textContent = ov.label;
+      chip.appendChild(te);
+      compTravelersG.appendChild(chip);
     });
 
     updateOutputDocTyping(gleanSvg, GLEAN_OUTPUT_DOC_ID, gVis.docCharCount);
