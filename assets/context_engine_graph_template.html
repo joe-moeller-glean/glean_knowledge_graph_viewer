@@ -262,6 +262,16 @@
     font-weight:900;
   }
 
+  @keyframes skeletonPulse{
+    0%{opacity:.12}
+    50%{opacity:.22}
+    100%{opacity:.12}
+  }
+  .skeleton-line{
+    fill:rgba(255,255,255,.85);
+    animation:skeletonPulse 1.6s ease-in-out infinite;
+  }
+
   .nodeDetailPopover{
     position:absolute;
     top:16px;
@@ -947,8 +957,12 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
 
   const GLEAN_OUTPUT_DOC_ID = 'glean-output-doc';
   const COMP_OUTPUT_DOC_ID = 'comp-output-doc';
-  const OUTPUT_DOC_PLACEHOLDER =
-    'The agent synthesizes personal and enterprise context in a single pass, then writes the grounded answer here. Fewer LLM round-trips and federated hops than a generic tool-calling stack.';
+  const SKELETON_LINES = [
+    0.92, 0.85, 0.90, 0.68,
+    0.88, 0.93, 0.75, 0.60,
+    0.91, 0.84, 0.70, 0.42
+  ];
+  const OUTPUT_DOC_PLACEHOLDER = new Array(SKELETON_LINES.length * 16).fill('.').join('');
 
   const state = {
     contextView:'glean',
@@ -1781,7 +1795,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(!nodeById[GLEAN_OUTPUT_DOC_ID]){
       nodeById[GLEAN_OUTPUT_DOC_ID] = {
         id: GLEAN_OUTPUT_DOC_ID,
-        label: 'Answer',
+        label: 'Response.docx',
         subtitle: 'Generated output',
         kind: 'outputDoc',
         layer: 'output',
@@ -1795,7 +1809,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     if(!nodeById[COMP_OUTPUT_DOC_ID]){
       nodeById[COMP_OUTPUT_DOC_ID] = {
         id: COMP_OUTPUT_DOC_ID,
-        label: 'Answer',
+        label: 'Response.docx',
         subtitle: 'Generated output',
         kind: 'outputDoc',
         layer: 'output',
@@ -2909,7 +2923,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       const iconPad = 10;
       const docIconW = 20;
       const labelGap = 10;
-      const titleX = node.x - size.w / 2 + iconPad + docIconW + labelGap + 35;
+      const titleX = node.x - size.w / 2 + iconPad + docIconW + labelGap + 55;
       const titleY = node.y - size.h / 2 + 24;
       const titleText = appendTextLines(g, wrapLabel(node.label, 14, 2), titleX, titleY, 'nodeLabel', 18);
       titleText.setAttribute('text-anchor', 'start');
@@ -3183,26 +3197,36 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const host = svgRoot.querySelector(`[id="${docId}-typing"]`);
     if(!host) return;
     clearElement(host);
+    if(charCount <= 0) return;
     const node = nodeById[docId];
     if(!node) return;
     const size = nodeSize(node);
-    const w = size.w - 20;
-    const sub = OUTPUT_DOC_PLACEHOLDER.slice(0, Math.max(0, charCount));
-    const fo = svgEl('foreignObject', {
-      x: node.x - size.w / 2 + 10,
-      y: node.y - size.h / 2 + 42,
-      width: w,
-      height: size.h - 54
-    });
-    const div = document.createElement('div');
-    div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    div.style.fontSize = '11px';
-    div.style.lineHeight = '1.35';
-    div.style.fontFamily = 'inherit';
-    div.style.color = 'rgba(255,255,255,.92)';
-    div.textContent = sub;
-    fo.appendChild(div);
-    host.appendChild(fo);
+    const contentW = size.w - 30;
+    const startX = node.x - size.w / 2 + 15;
+    const startY = node.y - size.h / 2 + 48;
+    const lineH = 8;
+    const gap = 9;
+    const charsPerLine = Math.ceil(OUTPUT_DOC_PLACEHOLDER.length / SKELETON_LINES.length);
+    const progress = Math.min(charCount, OUTPUT_DOC_PLACEHOLDER.length);
+    const fullLines = Math.min(SKELETON_LINES.length, Math.floor(progress / charsPerLine));
+    const partialFrac = (progress % charsPerLine) / charsPerLine;
+
+    for(let i = 0; i <= fullLines && i < SKELETON_LINES.length; i++){
+      const isPartial = (i === fullLines && fullLines < SKELETON_LINES.length);
+      const widthFrac = isPartial ? partialFrac : 1;
+      const lineW = contentW * SKELETON_LINES[i] * widthFrac;
+      if(lineW <= 0) continue;
+      const rect = svgEl('rect', {
+        x: startX,
+        y: startY + i * (lineH + gap),
+        width: lineW,
+        height: lineH,
+        rx: 3,
+        ry: 3,
+        class: 'skeleton-line'
+      });
+      host.appendChild(rect);
+    }
   }
 
   function renderStatic(opts = {}){
