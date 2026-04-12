@@ -544,6 +544,16 @@
     pointer-events:none;
   }
 
+  /* Raster action icons (e.g. MCP): match vector assistant-action stroke/fill color */
+  .node.assistantAction .actionIconRaster{
+    filter:brightness(0) invert(1);
+    opacity:.65;
+  }
+  .agenticActionChip .actionIconRaster{
+    filter:brightness(0) invert(1);
+    opacity:.88;
+  }
+
   .traveler{
     fill:var(--green);
     stroke:rgba(0,0,0,.35);
@@ -572,6 +582,10 @@
   .graphDetailSeg{margin-left:8px}
   .graphDetailSeg.isHidden{display:none}
 
+  .stagePanel.panelHidden{display:none}
+  .stagePanel.panelFull{flex:1 1 100%}
+  .stagePanel.panelFull + .stagePanel{border-left:none}
+
   @media (max-width:720px){
     .nodeDetailPopover{
       width:min(100%,calc(100% - 24px));
@@ -594,6 +608,11 @@
         </div>
       </div>
       <div class="controls">
+        <div class="segmented" id="contextViewWrap" aria-label="Context view">
+          <button type="button" id="btnViewGlean" class="active">Glean</button>
+          <button type="button" id="btnViewComp">Competitor</button>
+          <button type="button" id="btnViewBoth">Side-by-Side</button>
+        </div>
         <div class="segmented graphDetailSeg" id="graphDetailWrap" aria-label="Graph detail level">
           <button type="button" id="btnGraphCollapsed" class="active">Summary</button>
           <button type="button" id="btnGraphExpanded">Full graph</button>
@@ -604,11 +623,11 @@
 
     <div class="stageWrap card" id="stageWrap">
       <div class="stageRow">
-        <div class="stagePanel">
+        <div class="stagePanel" id="gleanPanel">
           <div class="stagePanelLabel">Glean context</div>
           <svg id="gleanSvg" class="stageSvg" viewBox="0 0 2000 2400" preserveAspectRatio="xMidYMid meet" aria-label="Glean agent lifecycle graph"></svg>
         </div>
-        <div class="stagePanel">
+        <div class="stagePanel" id="compPanel">
           <div class="stagePanelLabel">Competitor context</div>
           <svg id="compSvg" class="stageSvg" viewBox="0 0 2200 1800" preserveAspectRatio="xMidYMid meet" aria-label="Competitor agent lifecycle graph"></svg>
         </div>
@@ -863,7 +882,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   }
 };
 </script>
-<script>window.KNOWLEDGE_GRAPH_DATA = {"meta":{"title":"Enterprise Knowledge Graph","subtitle":""},"user":{"id":"user-current","label":"Current User","subtitle":"Role","kind":"user","layer":"user","group":"user","desc":"Profile node for the current user.","icon":"user"},"llms":[{"id":"llm-openai","label":"OpenAI","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-anthropic","label":"Anthropic","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-gemini","label":"Gemini","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"}],"assistantActions":[{"id":"aa-search","label":"Search","subtitle":"Capability","desc":"Unified enterprise search across indexed content (Glean Search).","icon":"search","caption":"Search"},{"id":"aa-create","label":"Create","subtitle":"Capability","desc":"Create records, drafts, and content via Actions and connectors.","icon":"plus-circle","caption":"Create"},{"id":"aa-plan","label":"Think","subtitle":"Capability","desc":"Multi-step reasoning and planning before taking action.","icon":"sparkles","caption":"Think"},{"id":"aa-code","label":"Run code","subtitle":"Capability","desc":"Execute code or scripts in supported environments.","icon":"terminal","caption":"Code"},{"id":"aa-image","label":"Generate image","subtitle":"Capability","desc":"Generate or edit images when models and policies allow.","icon":"image","caption":"Image"},{"id":"aa-browser","label":"Browser","subtitle":"Capability","desc":"Navigate and operate web applications where supported.","icon":"globe","caption":"Browse"},{"id":"aa-mcp","label":"MCP","subtitle":"Capability","desc":"Invoke MCP tools and connector-backed Actions from Assistant and Agents.","icon":"plug","caption":"MCP"}],"memories":[],"people":[],"teams":[],"departments":[],"projects":[],"meetings":[],"documents":[],"orgNodes":[],"enterpriseDocuments":[],"partners":[],"dataSources":[{"id":"ds-example-crm","label":"Example CRM","subtitle":"Datasource","desc":"Illustrative connector with nested tools.","icon":"database","actions":[{"id":"action-crm-lookup","label":"Lookup record","subtitle":"Tool","desc":"Open a record by id.","icon":"cpu"},{"id":"action-crm-update","label":"Update field","subtitle":"Tool","desc":"Patch fields on a record.","icon":"cpu"},{"id":"action-crm-log","label":"Log call","subtitle":"Tool","desc":"Attach an activity to a timeline.","icon":"cpu"},{"id":"action-crm-report","label":"Run report","subtitle":"Tool","desc":"Execute a saved report.","icon":"cpu"}]},{"id":"ds-example-wiki","label":"Example Wiki","subtitle":"Datasource","desc":"Second illustrative datasource.","icon":"database","tools":[{"id":"action-wiki-search","label":"Search pages","subtitle":"Tool","desc":"Full-text search.","icon":"cpu"},{"id":"action-wiki-edit","label":"Edit page","subtitle":"Tool","desc":"Create or update content.","icon":"cpu"},{"id":"action-wiki-link","label":"Link issue","subtitle":"Tool","desc":"Cross-link to tickets.","icon":"cpu"}]}],"actions":[{"id":"action-cal-list","label":"List calendars","subtitle":"Tool","desc":"Surface owned and shared calendars.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-create","label":"Create event","subtitle":"Tool","desc":"Add events with attendees and rooms.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-availability","label":"Find availability","subtitle":"Tool","desc":"Match free slots across attendees.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-meet","label":"Attach Meet link","subtitle":"Tool","desc":"Add video conferencing to invites.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-sync","label":"Sync rooms","subtitle":"Tool","desc":"Keep room resources up to date.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-drive-search","label":"Search files","subtitle":"Tool","desc":"Find docs by name, owner, or type.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-folder","label":"Open folder","subtitle":"Tool","desc":"Jump to shared drives and folders.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-share","label":"Share doc","subtitle":"Tool","desc":"Grant view or edit access.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-comment","label":"Add comment","subtitle":"Tool","desc":"Annotate files for review.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-version","label":"Version history","subtitle":"Tool","desc":"Compare and restore revisions.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-shortcut","label":"Create shortcut","subtitle":"Tool","desc":"Link files across locations.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-gmail-search","label":"Search mail","subtitle":"Tool","desc":"Query threads with operators.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-draft","label":"Draft reply","subtitle":"Tool","desc":"Compose with suggested tone.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-label","label":"Label thread","subtitle":"Tool","desc":"Organize with labels and filters.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-schedule","label":"Schedule send","subtitle":"Tool","desc":"Queue messages for later.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-attach","label":"Attach from Drive","subtitle":"Tool","desc":"Insert Drive files into mail.","parent":"ds-gmail","icon":"cpu"},{"id":"action-slack-post","label":"Post message","subtitle":"Tool","desc":"Send to channels or DMs.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-search","label":"Search channels","subtitle":"Tool","desc":"Find messages and files.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-canvas","label":"Create canvas","subtitle":"Tool","desc":"Structured docs inside Slack.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-react","label":"Add reaction","subtitle":"Tool","desc":"Emoji signals on threads.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-remind","label":"Set reminder","subtitle":"Tool","desc":"Snooze follow-ups.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-huddle","label":"Start huddle","subtitle":"Tool","desc":"Quick audio in channel.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-workflow","label":"Run workflow","subtitle":"Tool","desc":"Trigger automation shortcuts.","parent":"ds-slack","icon":"cpu"},{"id":"action-jira-create","label":"Create issue","subtitle":"Tool","desc":"File bugs and stories.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-transition","label":"Transition","subtitle":"Tool","desc":"Move work across columns.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-comment","label":"Add comment","subtitle":"Tool","desc":"Threaded ticket updates.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-confluence","label":"Link Confluence","subtitle":"Tool","desc":"Attach specs to issues.","parent":"ds-jira","icon":"cpu"},{"id":"action-gong-search","label":"Search calls","subtitle":"Tool","desc":"Find meetings by topic or rep.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-transcript","label":"Pull transcript","subtitle":"Tool","desc":"Read full conversation text.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-clip","label":"Clip moment","subtitle":"Tool","desc":"Share highlights externally.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-scorecard","label":"Scorecard view","subtitle":"Tool","desc":"Review coaching rubrics.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-snippet","label":"Share snippet","subtitle":"Tool","desc":"Export audio or text clips.","parent":"ds-gong","icon":"cpu"},{"id":"action-sf-account","label":"Lookup account","subtitle":"Tool","desc":"Open account timeline.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-opp","label":"Update opportunity","subtitle":"Tool","desc":"Change stage and amount.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-activity","label":"Log activity","subtitle":"Tool","desc":"Capture calls and tasks.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-task","label":"Create task","subtitle":"Tool","desc":"Assign follow-ups.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-pipeline","label":"Pipeline view","subtitle":"Tool","desc":"Filter forecast columns.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-einstein","label":"Einstein insight","subtitle":"Tool","desc":"Surface next-best actions.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sigma-workbook","label":"Run workbook","subtitle":"Tool","desc":"Refresh embedded models.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-export","label":"Export chart","subtitle":"Tool","desc":"CSV or image export.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-schedule","label":"Schedule export","subtitle":"Tool","desc":"Recurring report drops.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-embed","label":"Embed link","subtitle":"Tool","desc":"Share live charts securely.","parent":"ds-sigma","icon":"cpu"},{"id":"action-gh-search","label":"Search code","subtitle":"Tool","desc":"Repo-wide symbol search.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-pr","label":"Open PR","subtitle":"Tool","desc":"Review diffs and checks.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-issue","label":"Create issue","subtitle":"Tool","desc":"File bugs from chat.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-actions","label":"View Actions","subtitle":"Tool","desc":"CI run status and logs.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-workflow","label":"Trigger workflow","subtitle":"Tool","desc":"dispatch events.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-readme","label":"Read README","subtitle":"Tool","desc":"Surface repo overview.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-blame","label":"Blame view","subtitle":"Tool","desc":"Trace line ownership.","parent":"ds-github","icon":"cpu"},{"id":"action-glean-search","label":"Company search","subtitle":"Tool","desc":"Unified enterprise retrieval.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-chat","label":"Chat","subtitle":"Tool","desc":"Grounded assistant responses.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-agent","label":"Agent run","subtitle":"Tool","desc":"Multi-step workflows.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-skill","label":"Skill invoke","subtitle":"Tool","desc":"Declarative automations.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-saved","label":"Saved search","subtitle":"Tool","desc":"Monitor query alerts.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-people","label":"People lookup","subtitle":"Tool","desc":"Profiles and org context.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-docqa","label":"Doc Q&A","subtitle":"Tool","desc":"Deep read on linked sources.","parent":"ds-glean-platform","icon":"cpu"}],"opportunities":[],"accounts":[],"edges":[]};</script>
+<script>window.KNOWLEDGE_GRAPH_DATA = {"meta":{"title":"Enterprise Knowledge Graph","subtitle":""},"user":{"id":"user-current","label":"Current User","subtitle":"Role","kind":"user","layer":"user","group":"user","desc":"Profile node for the current user.","icon":"user"},"llms":[{"id":"llm-openai","label":"OpenAI","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-anthropic","label":"Anthropic","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"},{"id":"llm-gemini","label":"Gemini","kind":"llm","layer":"llm","group":"llm","desc":"LLM provider","icon":"cpu"}],"assistantActions":[{"id":"aa-search","label":"Search","subtitle":"Capability","desc":"Unified enterprise search across indexed content (Glean Search).","icon":"search","caption":"Search"},{"id":"aa-create","label":"Create","subtitle":"Capability","desc":"Create records, drafts, and content via Actions and connectors.","icon":"plus-circle","caption":"Create"},{"id":"aa-plan","label":"Think","subtitle":"Capability","desc":"Multi-step reasoning and planning before taking action.","icon":"sparkles","caption":"Think"},{"id":"aa-code","label":"Run code","subtitle":"Capability","desc":"Execute code or scripts in supported environments.","icon":"terminal","caption":"Code"},{"id":"aa-skill","label":"Skill","subtitle":"Capability","desc":"Invoke declarative Skills to automate multi-step workflows.","icon":"skill","caption":"Skill"},{"id":"aa-browser","label":"Browser","subtitle":"Capability","desc":"Navigate and operate web applications where supported.","icon":"globe","caption":"Browse"},{"id":"aa-mcp","label":"MCP","subtitle":"Capability","desc":"Invoke MCP tools and connector-backed Actions from Assistant and Agents.","icon":"refresh-cw","iconUrl":"https://upload.wikimedia.org/wikipedia/commons/f/fe/Model_Context_Protocol_logo.svg","caption":"MCP"}],"memories":[],"people":[],"teams":[],"departments":[],"projects":[],"meetings":[],"documents":[],"orgNodes":[],"enterpriseDocuments":[],"partners":[],"dataSources":[{"id":"ds-example-crm","label":"Example CRM","subtitle":"Datasource","desc":"Illustrative connector with nested tools.","icon":"database","actions":[{"id":"action-crm-lookup","label":"Lookup record","subtitle":"Tool","desc":"Open a record by id.","icon":"cpu"},{"id":"action-crm-update","label":"Update field","subtitle":"Tool","desc":"Patch fields on a record.","icon":"cpu"},{"id":"action-crm-log","label":"Log call","subtitle":"Tool","desc":"Attach an activity to a timeline.","icon":"cpu"},{"id":"action-crm-report","label":"Run report","subtitle":"Tool","desc":"Execute a saved report.","icon":"cpu"}]},{"id":"ds-example-wiki","label":"Example Wiki","subtitle":"Datasource","desc":"Second illustrative datasource.","icon":"database","tools":[{"id":"action-wiki-search","label":"Search pages","subtitle":"Tool","desc":"Full-text search.","icon":"cpu"},{"id":"action-wiki-edit","label":"Edit page","subtitle":"Tool","desc":"Create or update content.","icon":"cpu"},{"id":"action-wiki-link","label":"Link issue","subtitle":"Tool","desc":"Cross-link to tickets.","icon":"cpu"}]}],"actions":[{"id":"action-cal-list","label":"List calendars","subtitle":"Tool","desc":"Surface owned and shared calendars.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-create","label":"Create event","subtitle":"Tool","desc":"Add events with attendees and rooms.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-availability","label":"Find availability","subtitle":"Tool","desc":"Match free slots across attendees.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-meet","label":"Attach Meet link","subtitle":"Tool","desc":"Add video conferencing to invites.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-cal-sync","label":"Sync rooms","subtitle":"Tool","desc":"Keep room resources up to date.","parent":"ds-google-calendar","icon":"cpu"},{"id":"action-drive-search","label":"Search files","subtitle":"Tool","desc":"Find docs by name, owner, or type.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-folder","label":"Open folder","subtitle":"Tool","desc":"Jump to shared drives and folders.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-share","label":"Share doc","subtitle":"Tool","desc":"Grant view or edit access.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-comment","label":"Add comment","subtitle":"Tool","desc":"Annotate files for review.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-version","label":"Version history","subtitle":"Tool","desc":"Compare and restore revisions.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-drive-shortcut","label":"Create shortcut","subtitle":"Tool","desc":"Link files across locations.","parent":"ds-google-drive","icon":"cpu"},{"id":"action-gmail-search","label":"Search mail","subtitle":"Tool","desc":"Query threads with operators.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-draft","label":"Draft reply","subtitle":"Tool","desc":"Compose with suggested tone.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-label","label":"Label thread","subtitle":"Tool","desc":"Organize with labels and filters.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-schedule","label":"Schedule send","subtitle":"Tool","desc":"Queue messages for later.","parent":"ds-gmail","icon":"cpu"},{"id":"action-gmail-attach","label":"Attach from Drive","subtitle":"Tool","desc":"Insert Drive files into mail.","parent":"ds-gmail","icon":"cpu"},{"id":"action-slack-post","label":"Post message","subtitle":"Tool","desc":"Send to channels or DMs.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-search","label":"Search channels","subtitle":"Tool","desc":"Find messages and files.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-canvas","label":"Create canvas","subtitle":"Tool","desc":"Structured docs inside Slack.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-react","label":"Add reaction","subtitle":"Tool","desc":"Emoji signals on threads.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-remind","label":"Set reminder","subtitle":"Tool","desc":"Snooze follow-ups.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-huddle","label":"Start huddle","subtitle":"Tool","desc":"Quick audio in channel.","parent":"ds-slack","icon":"cpu"},{"id":"action-slack-workflow","label":"Run workflow","subtitle":"Tool","desc":"Trigger automation shortcuts.","parent":"ds-slack","icon":"cpu"},{"id":"action-jira-create","label":"Create issue","subtitle":"Tool","desc":"File bugs and stories.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-transition","label":"Transition","subtitle":"Tool","desc":"Move work across columns.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-comment","label":"Add comment","subtitle":"Tool","desc":"Threaded ticket updates.","parent":"ds-jira","icon":"cpu"},{"id":"action-jira-confluence","label":"Link Confluence","subtitle":"Tool","desc":"Attach specs to issues.","parent":"ds-jira","icon":"cpu"},{"id":"action-gong-search","label":"Search calls","subtitle":"Tool","desc":"Find meetings by topic or rep.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-transcript","label":"Pull transcript","subtitle":"Tool","desc":"Read full conversation text.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-clip","label":"Clip moment","subtitle":"Tool","desc":"Share highlights externally.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-scorecard","label":"Scorecard view","subtitle":"Tool","desc":"Review coaching rubrics.","parent":"ds-gong","icon":"cpu"},{"id":"action-gong-snippet","label":"Share snippet","subtitle":"Tool","desc":"Export audio or text clips.","parent":"ds-gong","icon":"cpu"},{"id":"action-sf-account","label":"Lookup account","subtitle":"Tool","desc":"Open account timeline.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-opp","label":"Update opportunity","subtitle":"Tool","desc":"Change stage and amount.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-activity","label":"Log activity","subtitle":"Tool","desc":"Capture calls and tasks.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-task","label":"Create task","subtitle":"Tool","desc":"Assign follow-ups.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-pipeline","label":"Pipeline view","subtitle":"Tool","desc":"Filter forecast columns.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sf-einstein","label":"Einstein insight","subtitle":"Tool","desc":"Surface next-best actions.","parent":"ds-salesforce","icon":"cpu"},{"id":"action-sigma-workbook","label":"Run workbook","subtitle":"Tool","desc":"Refresh embedded models.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-export","label":"Export chart","subtitle":"Tool","desc":"CSV or image export.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-schedule","label":"Schedule export","subtitle":"Tool","desc":"Recurring report drops.","parent":"ds-sigma","icon":"cpu"},{"id":"action-sigma-embed","label":"Embed link","subtitle":"Tool","desc":"Share live charts securely.","parent":"ds-sigma","icon":"cpu"},{"id":"action-gh-search","label":"Search code","subtitle":"Tool","desc":"Repo-wide symbol search.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-pr","label":"Open PR","subtitle":"Tool","desc":"Review diffs and checks.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-issue","label":"Create issue","subtitle":"Tool","desc":"File bugs from chat.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-actions","label":"View Actions","subtitle":"Tool","desc":"CI run status and logs.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-workflow","label":"Trigger workflow","subtitle":"Tool","desc":"dispatch events.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-readme","label":"Read README","subtitle":"Tool","desc":"Surface repo overview.","parent":"ds-github","icon":"cpu"},{"id":"action-gh-blame","label":"Blame view","subtitle":"Tool","desc":"Trace line ownership.","parent":"ds-github","icon":"cpu"},{"id":"action-glean-search","label":"Company search","subtitle":"Tool","desc":"Unified enterprise retrieval.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-chat","label":"Chat","subtitle":"Tool","desc":"Grounded assistant responses.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-agent","label":"Agent run","subtitle":"Tool","desc":"Multi-step workflows.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-skill","label":"Skill invoke","subtitle":"Tool","desc":"Declarative automations.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-saved","label":"Saved search","subtitle":"Tool","desc":"Monitor query alerts.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-people","label":"People lookup","subtitle":"Tool","desc":"Profiles and org context.","parent":"ds-glean-platform","icon":"cpu"},{"id":"action-glean-docqa","label":"Doc Q&A","subtitle":"Tool","desc":"Deep read on linked sources.","parent":"ds-glean-platform","icon":"cpu"}],"opportunities":[],"accounts":[],"edges":[]};</script>
 <script>
 (function(){
   const TEMPLATE_GRAPH_DATA = window.KNOWLEDGE_GRAPH_DATA || {
@@ -907,9 +926,14 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   const gleanSvg = document.getElementById('gleanSvg');
   const compSvg = document.getElementById('compSvg');
   const stageWrap = document.getElementById('stageWrap');
+  const gleanPanel = document.getElementById('gleanPanel');
+  const compPanel = document.getElementById('compPanel');
   const btnReset = document.getElementById('btnReset');
   const btnGraphCollapsed = document.getElementById('btnGraphCollapsed');
   const btnGraphExpanded = document.getElementById('btnGraphExpanded');
+  const btnViewGlean = document.getElementById('btnViewGlean');
+  const btnViewComp = document.getElementById('btnViewComp');
+  const btnViewBoth = document.getElementById('btnViewBoth');
 
   const pageTitle = document.getElementById('pageTitle');
   const nodeDetailPopover = document.getElementById('nodeDetailPopover');
@@ -927,6 +951,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     'The agent synthesizes personal and enterprise context in a single pass, then writes the grounded answer here. Fewer LLM round-trips and federated hops than a generic tool-calling stack.';
 
   const state = {
+    contextView:'glean',
     graphDetail:'collapsed',
     selected:null,
     cameraGlean:{x:0,y:0,scale:1},
@@ -972,8 +997,10 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   const ASSISTANT_CREATE_ACTION_ID = 'aa-create';
   /** Competitor-only overlay chip for the initial `Think` step (not a graph node). */
   const COMP_AGENTIC_THINK_ID = 'comp-agentic-think';
+  /** Assistant action ids omitted from LLM agentic iteration in both Glean and Competitor views. */
+  const AGENTIC_ITERATION_EXCLUDED_ASSISTANT_ACTION_IDS = new Set(['aa-search']);
   /** Assistant action ids omitted from competitor LLM animation picks (Glean may still use them). */
-  const COMPETITOR_EXCLUDED_ASSISTANT_ACTION_IDS = new Set(['aa-image']);
+  const COMPETITOR_EXCLUDED_ASSISTANT_ACTION_IDS = new Set(['aa-skill']);
   /** Fallback edge length when positions are missing (for duration estimates). */
   const TRAVELER_REF_EDGE_UNITS = 240;
   /** Pause after a full path (travel + typing) before the next randomized run. */
@@ -1055,7 +1082,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   function planAgenticActions(rand){
     const ids = (data.assistantActions || []).map(a => a.id).filter(Boolean);
     if(!ids.includes(ASSISTANT_CREATE_ACTION_ID)) return [];
-    const pool = ids.filter(id => id !== ASSISTANT_CREATE_ACTION_ID);
+    const pool = ids.filter(id => id !== ASSISTANT_CREATE_ACTION_ID && !AGENTIC_ITERATION_EXCLUDED_ASSISTANT_ACTION_IDS.has(id));
     if(!pool.length) return [ASSISTANT_CREATE_ACTION_ID];
     const total = 2 + Math.floor(rand() * 5);
     const needOther = total - 1;
@@ -1353,7 +1380,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   function planCompetitorAgentics(cycleIdx){
     const rand = mulberry32((cycleIdx + 1) * 0x5F356e9B);
     const ids = (data.assistantActions || []).map(a => a.id).filter(Boolean);
-    const pool = ids.filter(id => id !== ASSISTANT_CREATE_ACTION_ID && !COMPETITOR_EXCLUDED_ASSISTANT_ACTION_IDS.has(id));
+    const pool = ids.filter(id => id !== ASSISTANT_CREATE_ACTION_ID && !COMPETITOR_EXCLUDED_ASSISTANT_ACTION_IDS.has(id) && !AGENTIC_ITERATION_EXCLUDED_ASSISTANT_ACTION_IDS.has(id));
     const hasCreate = ids.includes(ASSISTANT_CREATE_ACTION_ID);
     const pickBatch = count => {
       if(count <= 0 || !pool.length) return [];
@@ -1460,6 +1487,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     const lab = agenticFloatLabel(actionId);
     if(!lab) return null;
     const iconName = (n && n.icon) || 'search';
+    const iconUrl = n && n.iconUrl ? String(n.iconUrl) : '';
     const f = Math.min(1, Math.max(0, fracInSlot));
     const opacity = f <= 0.5 ? 2 * f : 2 * (1 - f);
     const yBase = L.y - LLM_NODE_R - 8;
@@ -1473,6 +1501,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return {
       label: lab,
       icon: iconName,
+      iconUrl,
       opacity,
       iconCx,
       iconCy,
@@ -2335,7 +2364,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       const b2pre = pyramidBounds(2, summaryLayerW);
       const bandTextX = b2pre.x0 + 34;
       layoutGeom.bandTexts.push({ x: bandTextX, y: y - 6, text: 'Assistant capabilities', cls: 'bandLabel' });
-      layoutGeom.bandTexts.push({ x: bandTextX, y: y + 10, text: 'Search, chat, connector Actions, skills, agents, and tools', cls: 'bandSub' });
+      layoutGeom.bandTexts.push({ x: bandTextX, y: y + 10, text: 'Complete work with tools and actions', cls: 'bandSub' });
       const hLlmBand = 56 + ROW_LLM + 24;
       const llmY = y + 56 + ROW_LLM / 2;
       llmAssignFixedGap(data.llms, b2pre.x0 + 24, b2pre.x1 - 24, llmY, 15);
@@ -2436,7 +2465,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     let y = 22;
     const b2preExp = pyramidBounds(2);
     layoutGeom.bandTexts.push({ x: b2preExp.x0 + 34, y: y - 6, text: 'Assistant capabilities', cls: 'bandLabel' });
-    layoutGeom.bandTexts.push({ x: b2preExp.x0 + 34, y: y + 10, text: 'Search, chat, connector Actions, skills, agents, and tools', cls: 'bandSub' });
+    layoutGeom.bandTexts.push({ x: b2preExp.x0 + 34, y: y + 10, text: 'Complete work with tools and actions', cls: 'bandSub' });
     const hLlmBandExp = 56 + ROW_LLM + 24;
     const llmYExp = y + 56 + ROW_LLM / 2;
     llmAssignFixedGap(data.llms, b2preExp.x0 + 40, b2preExp.x1 - 40, llmYExp, 15);
@@ -2650,7 +2679,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     return null;
   }
 
-  function svgConnectorRasterIcon(href, cx, cy, size){
+  function svgConnectorRasterIcon(href, cx, cy, size, extraClass){
     const half = size / 2;
     const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
     img.setAttribute('x', String(cx - half));
@@ -2658,7 +2687,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     img.setAttribute('width', String(size));
     img.setAttribute('height', String(size));
     img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    img.setAttribute('class', 'nodeConnectorIcon');
+    img.setAttribute('class', extraClass ? `nodeConnectorIcon ${extraClass}` : 'nodeConnectorIcon');
     img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', href);
     img.setAttribute('href', href);
     return img;
@@ -2715,7 +2744,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       case 'trash-2': path('M3 6h18'); path('M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2'); line(10,11,10,17); line(14,11,14,17); path('M5 6l2 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l2-14'); break;
       case 'sparkles': path('M12 3v4'); path('M12 17v4'); path('M4.2 4.2l2.8 2.8'); path('M17 17l2.8 2.8'); path('M3 12h4'); path('M17 12h4'); path('M4.2 19.8l2.8-2.8'); path('M17 7l2.8-2.8'); circle(12,12,2.5,true); break;
       case 'terminal': rect(3,5,18,14,2); poly('7 10 9 12 7 14'); line(11,14,17,14); break;
-      case 'image': rect(3,5,18,14,2); circle(8,10,2); poly('8 16 12 12 16 16'); break;
+      case 'skill': line(7,17,17,7); break;
       case 'globe': circle(12,12,9); ellipsePath(g,12,12,9,4,cls); line(3,12,21,12); line(12,3,12,21); break;
       case 'plug': path('M12 22v-5'); path('M9 8V2'); path('M15 8V2'); path('M9 8a3 3 0 0 0 6 0'); rect(8,13,8,6,1); break;
       default: circle(12,12,7);
@@ -2863,7 +2892,9 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     } else if(node.kind === 'tool'){
       g.appendChild(iconGroup(node.icon || 'cpu', iconX, iconY, 20));
     } else if(node.kind === 'assistantAction'){
-      g.appendChild(iconGroup(node.icon || 'search', iconX, iconY, ASSISTANT_ACTION_ICON_PX));
+      const au = node.iconUrl ? String(node.iconUrl) : '';
+      if(au) g.appendChild(svgConnectorRasterIcon(au, iconX, iconY, ASSISTANT_ACTION_ICON_PX, 'actionIconRaster'));
+      else g.appendChild(iconGroup(node.icon || 'search', iconX, iconY, ASSISTANT_ACTION_ICON_PX));
     } else if(node.kind === 'llm' && opts && opts.isGlean){
       const raster = llmRasterIconUrlForNode(node);
       if(raster) g.appendChild(svgConnectorRasterIcon(raster, iconX, iconY, 28));
@@ -3034,9 +3065,23 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       const pad = 64;
       minX -= pad; maxX += pad; minY -= pad; maxY += pad;
     }
-    cam.scale = which === 'glean'
-      ? Math.min(GLEAN_CAMERA_MAX_SCALE, GLEAN_CAMERA_START_SCALE)
-      : COMPETITOR_CAMERA_START_SCALE;
+
+    const standalone = (state.contextView === 'glean' && which === 'glean')
+                    || (state.contextView === 'comp' && which === 'comp');
+    if(standalone){
+      const vb = svg.viewBox && svg.viewBox.baseVal;
+      const vbW = vb && vb.width > 0 ? vb.width : rect.width;
+      const vbH = vb && vb.height > 0 ? vb.height : rect.height;
+      const contentW = maxX - minX;
+      const contentH = maxY - minY;
+      const maxScale = which === 'glean' ? GLEAN_CAMERA_MAX_SCALE : 2.6;
+      cam.scale = Math.min(maxScale, vbW / contentW, vbH / contentH);
+    } else {
+      cam.scale = which === 'glean'
+        ? Math.min(GLEAN_CAMERA_MAX_SCALE, GLEAN_CAMERA_START_SCALE)
+        : COMPETITOR_CAMERA_START_SCALE;
+    }
+
     const cx = (minX + maxX) / 2;
     const cy = (minY + maxY) / 2;
     const vb = svg.viewBox && svg.viewBox.baseVal;
@@ -3047,10 +3092,20 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   }
 
   function fitBothCameras(){
-    fitCameraToGraph('glean');
-    fitCameraToGraph('comp');
-    applyCamera('glean');
-    applyCamera('comp');
+    if(state.contextView !== 'comp') { fitCameraToGraph('glean'); applyCamera('glean'); }
+    if(state.contextView !== 'glean') { fitCameraToGraph('comp'); applyCamera('comp'); }
+  }
+
+  function applyContextView(){
+    const v = state.contextView;
+    gleanPanel.classList.toggle('panelHidden', v === 'comp');
+    gleanPanel.classList.toggle('panelFull', v === 'glean');
+    compPanel.classList.toggle('panelHidden', v === 'glean');
+    compPanel.classList.toggle('panelFull', v === 'comp');
+    btnViewGlean.classList.toggle('active', v === 'glean');
+    btnViewComp.classList.toggle('active', v === 'comp');
+    btnViewBoth.classList.toggle('active', v === 'both');
+    requestAnimationFrame(() => { fitBothCameras(); });
   }
 
   /** Glean: draw ds-glean-platform under other connectors (SVG paint order); then left→right so neighbors aren’t covered. */
@@ -3179,16 +3234,16 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
       state.indexPills = [];
       state.indexPillNextSpawnMs = null;
       fitBothCameras();
-      const deferFit = (svgEl, attempts) => {
+      const deferFit = (targetSvg, attempts) => {
         if(attempts <= 0) return;
         requestAnimationFrame(() => {
-          const r = svgEl.getBoundingClientRect();
+          const r = targetSvg.getBoundingClientRect();
           if(r.width >= 8 && r.height >= 8){
             fitBothCameras();
-          } else deferFit(svgEl, attempts - 1);
+          } else deferFit(targetSvg, attempts - 1);
         });
       };
-      deferFit(gleanSvg, 16);
+      deferFit(state.contextView === 'comp' ? compSvg : gleanSvg, 16);
     }
     renderTravelers();
   }
@@ -3267,7 +3322,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     updateAndDrawIndexPills(now, layoutPos.glean);
     (gVis.agenticOverlays || []).forEach(ov => {
       const chip = svgEl('g', { class: 'agenticActionChip', opacity: String(ov.opacity) });
-      chip.appendChild(iconGroup(ov.icon, ov.iconCx, ov.iconCy, ov.iconSize));
+      if(ov.iconUrl) chip.appendChild(svgConnectorRasterIcon(ov.iconUrl, ov.iconCx, ov.iconCy, ov.iconSize, 'actionIconRaster'));
+      else chip.appendChild(iconGroup(ov.icon, ov.iconCx, ov.iconCy, ov.iconSize));
       const te = svgEl('text', {
         x: ov.iconCx + ov.iconSize / 2 + ov.gap,
         y: ov.iconCy,
@@ -3284,7 +3340,8 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     });
     (cVis.agenticOverlays || []).forEach(ov => {
       const chip = svgEl('g', { class: 'agenticActionChip', opacity: String(ov.opacity) });
-      chip.appendChild(iconGroup(ov.icon, ov.iconCx, ov.iconCy, ov.iconSize));
+      if(ov.iconUrl) chip.appendChild(svgConnectorRasterIcon(ov.iconUrl, ov.iconCx, ov.iconCy, ov.iconSize, 'actionIconRaster'));
+      else chip.appendChild(iconGroup(ov.icon, ov.iconCx, ov.iconCy, ov.iconSize));
       const te = svgEl('text', {
         x: ov.iconCx + ov.iconSize / 2 + ov.gap,
         y: ov.iconCy,
@@ -3391,6 +3448,15 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
     });
   }
 
+  [['glean', btnViewGlean], ['comp', btnViewComp], ['both', btnViewBoth]].forEach(([mode, btn]) => {
+    if(!btn) return;
+    btn.addEventListener('click', () => {
+      if(state.contextView === mode) return;
+      state.contextView = mode;
+      applyContextView();
+    });
+  });
+
   btnReset.addEventListener('click', () => {
     state.selected = null;
     renderStatic();
@@ -3409,6 +3475,7 @@ window.GLEAN_CONNECTOR_ICON_DATA = {
   }
 
   renderStatic();
+  applyContextView();
   requestAnimationFrame(animate);
 })();
 </script>
