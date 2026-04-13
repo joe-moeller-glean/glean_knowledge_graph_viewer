@@ -91,10 +91,8 @@ This is the object to populate (equivalent to `assets/template_graph_data.json`)
   "orgNodes": [],
   "enterpriseDocuments": [],
   "partners": [],
-  "actions": [],
   "opportunities": [],
-  "accounts": [],
-  "edges": []
+  "accounts": []
 }
 ```
 
@@ -114,8 +112,6 @@ Use stable, unique string **`id`** values across the entire graph (URLs, issue k
 | `icon` | recommended | For most nodes: built-in feather-style name (e.g. `user`, `calendar`, `file-text`, `cpu`). For 
 | `iconUrl` | optional | Direct image URL for a datasource (or LLM) node; overrides map lookup when set. |
 | `llmSlug` | **llms** (optional) | Same idea as **`connectorSlug`** for LLM rows; **`bySlug`** includes `openai`, `anthropic`, `gemini`. |
-| `parent` | **only on `actions`** | String **`id`** of the `dataSources` node this tool belongs to. |
-| `x`, `y` | optional | Numbers; layout usually assigns positions—omit unless you are overriding. |
 
 The **`user`** object uses the same shape as other nodes (no `parent`).
 
@@ -207,10 +203,8 @@ Before touching the HTML, write the populated graph object to **`knowledge_graph
   "orgNodes": [...],
   "enterpriseDocuments": [...],
   "partners": [...],
-  "actions": [...],
   "opportunities": [...],
-  "accounts": [...],
-  "edges": [...]
+  "accounts": [...]
 }
 ```
 
