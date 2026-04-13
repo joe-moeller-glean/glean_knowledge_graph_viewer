@@ -20,7 +20,7 @@ If ambiguous, **ask one short clarifying question** (“Do you want me to genera
 
 ## Goal
 
-Produce one personalized `.html` file by filling `assets/context_engine_graph_template.html` with a graph payload derived from **the current user’s** Glean-accessible evidence. **Default time window: the last four weeks** for anything time-bounded (activity, recency, “recent” docs or meetings). If the user names another range, honor it (`after:` / `before:`, `updated:past_month`, meeting date bounds, etc.).
+Produce `knowledge_graph.html` by filling `assets/context_engine_graph_template.html` with a graph payload derived from **the current user’s** Glean-accessible evidence. **Default time window: the last four weeks** for anything time-bounded (activity, recency, “recent” docs or meetings). If the user names another range, honor it (`after:` / `before:`, `updated:past_month`, meeting date bounds, etc.).
 
 Do not fabricate named entities. Prefer empty arrays over guessed nodes.
 
@@ -229,4 +229,20 @@ After the replacement, verify:
 2. The object closes with `};` (semicolon-terminated assignment).
 3. No stray characters were introduced before or after the object.
 
-Save the edited file as the `.html` artifact for the user, using the output filename they requested (default: `knowledge_graph.html`).
+Save the edited file as **`knowledge_graph.html`** in the working directory.
+
+## Copy image files
+
+Copy all the files inside the **`assets/images/`** folder from this project into a folder named `images/` in the same working directory as the generated `knowledge_graph.html` file. The template references these images for datasource and LLM icons; they must be reachable at `images/<filename>` relative to the HTML file.
+
+```
+<working-dir>/
+├── knowledge_graph.html
+├── knowledge_graph.json
+└── images/
+  ├── slack.svg
+  ├── jira.svg
+  └── ...
+```
+
+If the output directory already contains `images/`, overwrite with the latest copies from this project.
