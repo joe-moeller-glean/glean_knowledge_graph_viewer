@@ -1,8 +1,9 @@
 ---
 description:
-  Apply ONLY when the user explicitly asks to generate, create, build, produce, or render
-  the interactive HTML artifact (personalized enterprise knowledge graph / Glean context
-  engine visualization). Do NOT invoke for general questions or discussion about knowledge
+  Apply when the user asks to generate, create, build, produce, or render
+  the interactive HTML artifact, dashboard, interface for a 
+  personalized enterprise knowledge graph / Glean context engine visualization. 
+  Do NOT invoke for general questions or discussion about knowledge
   graphs, Glean Context, the Enterprise context engine, connected context, or similar
   concepts—answer those conversationally without running this skill or producing the HTML.
 name: Enterprise Knowledge Graph Context Engine Visualizer
@@ -11,7 +12,7 @@ name: Enterprise Knowledge Graph Context Engine Visualizer
 
 ## When to use this skill (strict)
 
-**Use this skill** only when the user’s intent is to **generate** (or create/build/produce/output) the **interactive `.html` graph artifact** described below—i.e. they want the filled template with real Glean-backed data.
+**Use this skill** only when the user’s intent is to **generate** (or create/build/produce/output) the **interactive `.html` artifact** described below—i.e. they want to fill the template in `assets/context_engine_graph_template.html` with real Glean-backed data.
 
 **Do not use this skill** when the user is only asking **what** something is, how it works, product comparisons, architecture, definitions, or other **informational** topics—even if they mention “knowledge graph,” “Glean Context,” “enterprise context,” “context engine,” or closely related phrases. In those cases, respond normally and **do not** run data gathering for this template or emit the HTML artifact unless they also clearly ask you to generate it.
 
@@ -29,7 +30,7 @@ Match `assets/template_graph_data.json`: same top-level keys, nesting, and field
 
 ### Required top-level keys
 
-`meta`, `user`, `llms`, `memories`, `people`, `teams`, `departments`, `projects`, `meetings`, `documents`, `orgNodes`, `enterpriseDocuments`, `partners`, `actions`, `opportunities`, `accounts`, `edges`
+`meta`, `user`, `llms`, `memories`, `people`, `teams`, `departments`, `projects`, `meetings`, `documents`, `orgNodes`, `enterpriseDocuments`, `partners`, `opportunities`, `accounts`
 
 ### Full document structure (JSON)
 
@@ -97,7 +98,7 @@ This is the object to populate (equivalent to `assets/template_graph_data.json`)
 }
 ```
 
-### Node objects (each element of the arrays above, except `edges`)
+### Node objects (each element of the arrays above)
 
 Use stable, unique string **`id`** values across the entire graph (URLs, issue keys, CRM ids, email hashes, etc.). Typical fields:
 
@@ -120,21 +121,7 @@ The **`user`** object uses the same shape as other nodes (no `parent`).
 
 **LLM nodes (`llms`):** the template resolves logos similarly via **`llmSlug`**, or **`id`** after `llm-`, or **`label`** against the same maps—use **`bySlug`** keys `openai`, `anthropic`, `gemini` when applicable.
 
-### `edges` array
-
-Each edge connects two existing node ids. Prefer this shape (the template also accepts `source` / `target` and optional `kind` / `type`):
-
-```json
-{
-  "a": "user-current",
-  "b": "person-alice",
-  "type": "bridge"
-}
-```
-
-`type` is optional (defaults internally if omitted). Every `a` / `b` (or `source` / `target`) must match an `id` on **`user`**, **`llms`**, or another populated array.
-
-## How to find the data (Glean)
+## How to search for the data (Glean)
 
 Use the smallest set of tools that still yields a dense, real graph. Iterate: broad search → narrow with filters → `read_document` only when snippets are insufficient (few high-value docs).
 
@@ -151,10 +138,6 @@ Use the smallest set of tools that still yields a dense, real graph. Iterate: br
 ### `user`
 
 - **`employee_search`**: current user’s profile — name, title, org path, location, manager/reporting hints. Build the single `user` node (`id` stable, e.g. `user-current`, plus real `label` / `subtitle` from title).
-
-### `llms`
-
-- If the template already lists OpenAI, Anthropic, and Gemini, you may keep that structure; otherwise supply three LLM provider nodes consistent with `template_graph_data.json`.
 
 ### `memories`
 
@@ -194,26 +177,62 @@ Use the smallest set of tools that still yields a dense, real graph. Iterate: br
 
 ### `partners`
 
-- **Search** CRM and partner-facing content: customers, vendors, resellers, named partner programs. Ground names in snippets or structured fields; use CRM ids in `id` when present.
+- **Search** Salesforce and partner-facing content: customers, vendors, resellers, named partner programs. Ground names in snippets or structured fields; use CRM ids in `id` when present.
 
-### `actions`
+### `opportunities`
 
-- Executable **tools** tied to each unique datasource: MCP tools, action packs, or documented automations. Each node **`parent`** must equal a `dataSources` node `id`. Only include tools you can justify from tool listings or docs—do not invent names.
+- **Search** Salesforce for open/pipeline opportunities and the user or their team touches in the window. Use CRM-stable ids; `subtitle` for stage, amount, or owner when present.
 
-### `opportunities` and `accounts`
+### `accounts`
 
-- **Search** (and structured CRM results if available): open/pipeline opportunities and named accounts the user or their team touches in the window. Use CRM-stable ids; `subtitle` for stage, amount, or owner when present.
+- **Search** Salesforce for named accounts the user or their team touches in the window.
 
-### `edges`
+## Save the graph data as `knowledge_graph.json`
 
-- For each relationship supported by evidence, add `{ "a": "<id>", "b": "<id>", "type": "<optional>" }` (or `source`/`target` if you normalize in script—the template accepts `a`/`b` or `source`/`target`). Examples: user–person, user–document, person–meeting, document–project, document–datasource, tool–datasource (`parent` already links tools; edges can reinforce graph paths), account–opportunity, partner–account. Aim for **many edges** so the graph reflects multi-hop context (see below).
+Before touching the HTML, write the populated graph object to **`knowledge_graph.json`** in the project root. The file must be valid JSON (strict — quoted keys, no trailing commas, no comments). It must contain all required top-level keys from **Full document structure (JSON)** above, with every array either populated or `[]`.
 
-## Density targets (data)
+```json
+// knowledge_graph.json — example skeleton (replace arrays with real nodes)
+{
+  "meta": { "title": "...", "subtitle": "..." },
+  "user": { "id": "user-current", ... },
+  "llms": [...],
+  "memories": [...],
+  "people": [...],
+  "teams": [...],
+  "departments": [...],
+  "projects": [...],
+  "meetings": [...],
+  "documents": [...],
+  "orgNodes": [...],
+  "enterpriseDocuments": [...],
+  "partners": [...],
+  "actions": [...],
+  "opportunities": [...],
+  "accounts": [...],
+  "edges": [...]
+}
+```
 
-For a compelling graph, aim for **at least ~100 nodes** and **roughly 2.5× as many edges as nodes**, still without inventing names. Increase coverage by widening searches (more collaborators, teams, docs, CRM objects, datasources) and by adding edges wherever the index supports a real link.
+This file serves as the ground-truth record of what was found in Glean. It is separate from the HTML so it can be inspected, version-controlled, or re-ingested without re-running Glean searches.
 
-## Install the graph JSON in the template
+## Install the graph JSON in the HTML template
 
-The runtime graph is the object assigned to **`TEMPLATE_GRAPH_DATA`** in `assets/context_engine_graph_template.html` (inside the main `<script>`), or **`window.KNOWLEDGE_GRAPH_DATA`** if set **before** that script runs. Replace the entire fallback object so it matches **Full document structure (JSON)** above (same keys; arrays filled or `[]`). In the HTML file you may use a JavaScript object literal (unquoted keys where valid) instead of strict JSON.
+**Read `assets/context_engine_graph_template.html` first** so you know the exact variable name and location before editing.
 
-Save the file as the single `.html` artifact for the user.
+Locate the variable assignment in the main `<script>` block. It looks like one of:
+
+```js
+window.KNOWLEDGE_GRAPH_DATA = { ... };
+```
+
+Replace the **entire** existing object literal — from the opening `{` to the closing `}` — with the object you built (the same data you wrote to `knowledge_graph.json`). In the HTML file you may use a JavaScript object literal (unquoted keys where valid); it does not have to be strict JSON.
+
+**Do not change anything else in the file.** Preserve all other script content, styles, markup, and comments exactly as they are.
+
+After the replacement, verify:
+1. The variable name is unchanged (e.g. `window.KNOWLEDGE_GRAPH_DATA =`).
+2. The object closes with `};` (semicolon-terminated assignment).
+3. No stray characters were introduced before or after the object.
+
+Save the edited file as the `.html` artifact for the user, using the output filename they requested (default: `knowledge_graph.html`).
