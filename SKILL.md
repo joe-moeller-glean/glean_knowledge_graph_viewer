@@ -1,5 +1,5 @@
 ---
-description: >-
+description:
   Apply ONLY when the user explicitly asks to generate, create, build, produce, or render
   the interactive HTML artifact (personalized enterprise knowledge graph / Glean context
   engine visualization). Do NOT invoke for general questions or discussion about knowledge
@@ -29,7 +29,7 @@ Match `assets/template_graph_data.json`: same top-level keys, nesting, and field
 
 ### Required top-level keys
 
-`meta`, `user`, `llms`, `memories`, `people`, `teams`, `departments`, `projects`, `meetings`, `documents`, `orgNodes`, `enterpriseDocuments`, `partners`, `dataSources`, `actions`, `opportunities`, `accounts`, `edges`
+`meta`, `user`, `llms`, `memories`, `people`, `teams`, `departments`, `projects`, `meetings`, `documents`, `orgNodes`, `enterpriseDocuments`, `partners`, `actions`, `opportunities`, `accounts`, `edges`
 
 ### Full document structure (JSON)
 
@@ -90,7 +90,6 @@ This is the object to populate (equivalent to `assets/template_graph_data.json`)
   "orgNodes": [],
   "enterpriseDocuments": [],
   "partners": [],
-  "dataSources": [],
   "actions": [],
   "opportunities": [],
   "accounts": [],
@@ -111,25 +110,13 @@ Use stable, unique string **`id`** values across the entire graph (URLs, issue k
 | `kind` | recommended | Semantic type; template may infer layout/styling (`user`, `llm`, `memory`, `person`, `team`, `project`, `meeting`, `doc`, `department`, `partner`, `datasource`, `tool`, `opportunity`, `account`, etc.). |
 | `layer` | optional | `user`, `llm`, `personal`, `enterprise` — helps grouping when set. |
 | `group` | optional | Finer bucket (e.g. `people`, `docs`); may be filled by normalization if omitted. |
-| `icon` | recommended | For most nodes: built-in feather-style name (e.g. `user`, `calendar`, `file-text`, `cpu`). For **`dataSources`**, raster logos use **`connectorSlug`** / **`id`** / **`label`** (see below); `icon` is only the fallback if no map match. |
-| `connectorSlug` | **dataSources** | Lowercase Glean connector **slug** that appears as a key in `assets/glean_connector_icons.json` → **`bySlug`** (e.g. `jira`, `slack`, `microsoft-teams`). Prefer this when you know the slug. |
+| `icon` | recommended | For most nodes: built-in feather-style name (e.g. `user`, `calendar`, `file-text`, `cpu`). For 
 | `iconUrl` | optional | Direct image URL for a datasource (or LLM) node; overrides map lookup when set. |
 | `llmSlug` | **llms** (optional) | Same idea as **`connectorSlug`** for LLM rows; **`bySlug`** includes `openai`, `anthropic`, `gemini`. |
 | `parent` | **only on `actions`** | String **`id`** of the `dataSources` node this tool belongs to. |
 | `x`, `y` | optional | Numbers; layout usually assigns positions—omit unless you are overriding. |
 
 The **`user`** object uses the same shape as other nodes (no `parent`).
-
-### Data source icons (`assets/glean_connector_icons.json`)
-
-Use **`assets/glean_connector_icons.json`** as the canonical slug → logo map (the template also inlines the same data as `window.GLEAN_CONNECTOR_ICON_DATA`). For each **`dataSources`** node, **if** you find a matching connector in that file, set fields so the template can resolve the raster icon:
-
-1. **Preferred:** set **`connectorSlug`** to a key from **`bySlug`** (hyphenated, e.g. `google-calendar`, `salesforce`).
-2. **Alternative:** set **`id`** to `ds-<slug>` where `<slug>` is a **`bySlug`** key (the template strips the `ds-` prefix and looks up **`bySlug`**).
-3. **Or:** set **`label`** to match a key in **`byConnectorNameLower`** exactly after lowercasing (e.g. `google drive`, `microsoft teams`) when Glean or metadata uses the product name that way.
-4. **`iconUrl`:** use only when you have a concrete URL and want to bypass the map.
-
-If there is **no** matching entry, omit these; the graph still works and the template uses a generic datasource glyph.
 
 **LLM nodes (`llms`):** the template resolves logos similarly via **`llmSlug`**, or **`id`** after `llm-`, or **`label`** against the same maps—use **`bySlug`** keys `openai`, `anthropic`, `gemini` when applicable.
 
@@ -208,10 +195,6 @@ Use the smallest set of tools that still yields a dense, real graph. Iterate: br
 ### `partners`
 
 - **Search** CRM and partner-facing content: customers, vendors, resellers, named partner programs. Ground names in snippets or structured fields; use CRM ids in `id` when present.
-
-### `dataSources`
-
-- Connectors and apps the org has indexed: infer from **document/meeting hit metadata** (source application), connector lists if exposed, or **search** for “integration” / connector docs. One node per logical datasource. **Match icons to `assets/glean_connector_icons.json` when possible** using **`connectorSlug`**, **`id`** (`ds-<slug>`), or **`label`** / **`byConnectorNameLower`** as described in **Data source icons** above.
 
 ### `actions`
 
